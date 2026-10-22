@@ -1,0 +1,76 @@
+{
+  "ngay": "2026-10-21",
+  "trang_thai": "da_tong_ket",
+  "ngu": {
+    "tu": "01:30",
+    "den": "07:30",
+    "gio": 6.0
+  },
+  "nuoc_ml": 500,
+  "bo_sung": [
+    "Hapacal (canxi)"
+  ],
+  "an_uong": [
+    {
+      "bua": "Trưa",
+      "mon": "1 phần mì tươi xá xíu",
+      "kcal_min": 450,
+      "kcal_max": 650
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "1 chai sữa hạt ~350 ml",
+      "kcal_min": 120,
+      "kcal_max": 230
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "1 lít nước ép lựu",
+      "kcal_min": 450,
+      "kcal_max": 600
+    },
+    {
+      "bua": "Tối",
+      "mon": "300 g cơm trắng chín",
+      "kcal_min": 390,
+      "kcal_max": 390
+    },
+    {
+      "bua": "Tối",
+      "mon": "Dưa mắm trộn thịt heo luộc ~50 g",
+      "kcal_min": 70,
+      "kcal_max": 110
+    },
+    {
+      "bua": "Tối",
+      "mon": "Ba khía ~50 g",
+      "kcal_min": 40,
+      "kcal_max": 70
+    }
+  ],
+  "buoc_chan": 1000,
+  "tap_luyen": [],
+  "nap": {
+    "min": 1520,
+    "max": 2050
+  },
+  "tieu_hao": {
+    "min": 1900,
+    "max": 2050
+  },
+  "tham_hut_ghi_nhan": 190,
+  "danh_gia": [
+    "Calo nạp 1.520–2.050 kcal, mức giữa ~1.785 — sát mục tiêu 1.800 nhưng chất lượng bữa ăn chưa tốt.",
+    "Thâm hụt chỉ ~190 kcal do vận động rất thấp (1.000 bước, không tập).",
+    "Protein ~35–45 g — thiếu nghiêm trọng so với mục tiêu 130–150 g, ngày thứ hai liên tiếp.",
+    "Đường lỏng quá nhiều: 1 lít nước ép lựu ≈ 450–600 kcal, tương đương 1/3 tổng calo cả ngày.",
+    "Ngủ ~6 giờ 20 phút và nước lọc chỉ 500 ml — cả hai đều thiếu."
+  ],
+  "ghi_chu": [
+    "Ngủ trưa thêm 20 phút (tổng ~6 giờ 20 phút).",
+    "1 lít nước ép lựu ≈ 110–140 g đường tự nhiên dạng lỏng — không no lâu và không tốt cho men gan cao; nên giới hạn ≤ 200–250 ml/lần.",
+    "Hapacal là canxi: uống cách viên kẽm DHC vài tiếng vì canxi làm giảm hấp thu kẽm.",
+    "Protein cả ngày chỉ khoảng 35–45 g, thấp xa mục tiêu 130–150 g.",
+    "Bữa tối: 300 g cơm (390 kcal) chiếm phần lớn calo, đồ ăn kèm ít và rất mặn (dưa mắm + ba khía) → cân sáng 22/10 có thể tăng do giữ nước."
+  ]
+}

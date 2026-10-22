@@ -1,0 +1,134 @@
+{
+  "ngay": "2026-10-14",
+  "trang_thai": "da_tong_ket",
+  "ngu": {
+    "tu": "01:30",
+    "den": "07:00",
+    "gio": 5.5
+  },
+  "nuoc_ml": 1110,
+  "bo_sung": [
+    "MyVita Multi",
+    "Kẽm DHC"
+  ],
+  "an_uong": [
+    {
+      "bua": "Sáng",
+      "mon": "Bánh mì chả cá",
+      "kcal_min": 450,
+      "kcal_max": 450
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Viên sủi MyVita Multi (pha 250 ml nước)",
+      "kcal_min": 9,
+      "kcal_max": 9
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Ức gà 90 g",
+      "kcal_min": 149,
+      "kcal_max": 149
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Bông cải xanh 120 g",
+      "kcal_min": 42,
+      "kcal_max": 42
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Cơm trắng 100 g",
+      "kcal_min": 130,
+      "kcal_max": 130
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Sữa đậu nành Fami nguyên chất (1 bịch)",
+      "kcal_min": 59,
+      "kcal_max": 59
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Cà phê gói pha sẵn (160 ml nước)",
+      "kcal_min": 80,
+      "kcal_max": 80
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Sữa tươi Vinamilk có đường 300 ml",
+      "kcal_min": 195,
+      "kcal_max": 195
+    },
+    {
+      "bua": "Tối",
+      "mon": "Ức gà luộc 90 g",
+      "kcal_min": 149,
+      "kcal_max": 149
+    },
+    {
+      "bua": "Tối",
+      "mon": "Khoai 130 g (cân sống)",
+      "kcal_min": 100,
+      "kcal_max": 115
+    },
+    {
+      "bua": "Tối",
+      "mon": "Bông cải xanh luộc 100 g",
+      "kcal_min": 35,
+      "kcal_max": 35
+    },
+    {
+      "bua": "Tối",
+      "mon": "Chả giò chiên không dầu (4 cái)",
+      "kcal_min": 240,
+      "kcal_max": 400
+    },
+    {
+      "bua": "Tối",
+      "mon": "Cơm trắng 100 g",
+      "kcal_min": 130,
+      "kcal_max": 130
+    }
+  ],
+  "buoc_chan": 3000,
+  "tap_luyen": [
+    {
+      "ten": "Gym (tạ)",
+      "phut": 50,
+      "kcal_min": 220,
+      "kcal_max": 330,
+      "chi_tiet": null
+    },
+    {
+      "ten": "Đi bộ máy chạy",
+      "phut": 15,
+      "kcal_min": 140,
+      "kcal_max": 180,
+      "chi_tiet": "4,5 km/h, dốc 12–13%"
+    }
+  ],
+  "nap": {
+    "min": 1768,
+    "max": 1943
+  },
+  "tieu_hao": {
+    "min": 2200,
+    "max": 2350
+  },
+  "tham_hut_ghi_nhan": 420,
+  "danh_gia": [
+    "Lượng ăn gần mục tiêu 1.800 kcal; chả giò là nguồn sai số lớn nhất",
+    "Có ức gà cả trưa và tối nhưng protein có thể chưa đạt 130–150 g",
+    "Buổi tập 65 phút + 3.000 bước ngoài máy là khá tích cực",
+    "Ngủ 5,5 giờ là chưa đủ; tránh tập nặng nếu còn mệt sau lấy máu",
+    "Lượng nước ghi nhận còn thấp"
+  ],
+  "ghi_chu": [
+    "Đi khám sức khỏe công ty (có lấy máu)",
+    "Bắt đầu ngồi làm việc lúc 09:10",
+    "Bữa tối, buổi tập và số bước được báo vào sáng 15/10; trợ lý ghi nhầm sang 13/10, người dùng sửa 'hôm qua là ngày 14/10 chứ'",
+    "3.000 bước là tổng cả ngày ngoài máy chạy (sáng đã báo 1.500 bước)",
+    "Nước 1.110 ml theo con số trợ lý (400 + 250 + 160 ml đã ghi = 810 ml; trợ lý có thể đã tính cả sữa)"
+  ]
+}

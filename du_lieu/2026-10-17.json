@@ -1,0 +1,23 @@
+{
+  "ngay": "2026-10-17",
+  "trang_thai": "an_dinh",
+  "ngu": {
+    "tu": null,
+    "den": null,
+    "gio": null
+  },
+  "nuoc_ml": null,
+  "bo_sung": [],
+  "an_uong": [],
+  "buoc_chan": null,
+  "tap_luyen": [],
+  "nap": null,
+  "tieu_hao": null,
+  "tham_hut_ghi_nhan": 0,
+  "danh_gia": [
+    "Người dùng ấn định ngày không thâm hụt; bộ đếm giữ nguyên 2.795 kcal"
+  ],
+  "ghi_chu": [
+    "Không có nhật ký chi tiết; người dùng chỉ nói 'ngày 17/10 cho là không thâm hụt calo'"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "ngay": "2026-10-22",
+  "trang_thai": "dang_ghi",
+  "ngu": {"tu": "21:30", "den": "08:00", "gio": 10.0},
+  "nuoc_ml": 400,
+  "bo_sung": [],
+  "an_uong": [
+    {"bua": "Trưa", "mon": "300 g cơm trắng chín", "kcal_min": 390, "kcal_max": 390},
+    {"bua": "Trưa", "mon": "Dưa mắm trộn thịt heo luộc ~50 g", "kcal_min": 70, "kcal_max": 110},
+    {"bua": "Trưa", "mon": "Ba khía ~50 g", "kcal_min": 40, "kcal_max": 70},
+    {"bua": "Đồ uống", "mon": "500 ml cà phê phin + 40 g đường", "kcal_min": 165, "kcal_max": 175}
+  ],
+  "buoc_chan": null,
+  "tap_luyen": [],
+  "nap": null,
+  "tieu_hao": null,
+  "tham_hut_ghi_nhan": null,
+  "danh_gia": [],
+  "ghi_chu": [
+    "Ngủ 2 đợt: 21:30–23:30 (21/10) và 00:00–08:00 → tổng 10 giờ.",
+    "40 g đường trong cà phê ≈ 160 kcal, gần chạm giới hạn đường tự do 50 g/ngày; không tốt cho men gan cao.",
+    "500 ml cà phê phin chứa nhiều caffeine (có thể 300–500 mg), sát/vượt mức khuyến nghị 400 mg/ngày.",
+    "Protein đến trưa chỉ ~10–15 g — ngày thứ ba liên tiếp thiếu đạm; bữa tối phải ưu tiên đạm."
+  ]
+}

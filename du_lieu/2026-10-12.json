@@ -1,0 +1,104 @@
+{
+  "ngay": "2026-10-12",
+  "trang_thai": "da_tong_ket",
+  "ngu": {
+    "tu": "23:30",
+    "den": "08:00",
+    "gio": 8.5
+  },
+  "nuoc_ml": 2000,
+  "bo_sung": [],
+  "an_uong": [
+    {
+      "bua": "Trưa",
+      "mon": "Bánh đa cá rô (1 tô)",
+      "kcal_min": 600,
+      "kcal_max": 600
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Bánh in 40 g",
+      "kcal_min": 160,
+      "kcal_max": 160
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Kombucha vị táo 5 g pha 250 ml nước",
+      "kcal_min": 18,
+      "kcal_max": 18
+    },
+    {
+      "bua": "Phụ",
+      "mon": "Dưa lưới 50 g (đã bớt từ 100 g)",
+      "kcal_min": 17,
+      "kcal_max": 17
+    },
+    {
+      "bua": "Xế",
+      "mon": "2 trứng gà luộc vừa + 1 lòng trắng trứng luộc",
+      "kcal_min": 143,
+      "kcal_max": 143
+    },
+    {
+      "bua": "Tối",
+      "mon": "Đùi gà hấp 200 g",
+      "kcal_min": 300,
+      "kcal_max": 420
+    },
+    {
+      "bua": "Tối",
+      "mon": "Bắp non, mướp, bí xanh hấp",
+      "kcal_min": 30,
+      "kcal_max": 50
+    },
+    {
+      "bua": "Tối",
+      "mon": "Cơm trắng 200 g",
+      "kcal_min": 260,
+      "kcal_max": 260
+    },
+    {
+      "bua": "Tối",
+      "mon": "Canh mọc nấu bí xanh (1 chén)",
+      "kcal_min": 80,
+      "kcal_max": 130
+    }
+  ],
+  "buoc_chan": 3400,
+  "tap_luyen": [
+    {
+      "ten": "Gym (tạ)",
+      "phut": 35,
+      "kcal_min": 160,
+      "kcal_max": 230,
+      "chi_tiet": null
+    },
+    {
+      "ten": "Đi bộ máy chạy",
+      "phut": 15,
+      "kcal_min": 140,
+      "kcal_max": 180,
+      "chi_tiet": "4,5 km/h, dốc 12%"
+    }
+  ],
+  "nap": {
+    "min": 1608,
+    "max": 1798
+  },
+  "tieu_hao": {
+    "min": 2200,
+    "max": 2350
+  },
+  "tham_hut_ghi_nhan": 550,
+  "danh_gia": [
+    "Ăn khoảng 1.703 kcal, sát mục tiêu 1.800 kcal",
+    "Vận động tốt với 50 phút tập có chủ đích; nên tăng dần lên 5.000–7.000 bước/ngày",
+    "Nước khoảng 2 lít, tương đối ổn",
+    "Ngày mai ưu tiên bổ sung đủ protein (130–150 g/ngày)"
+  ],
+  "ghi_chu": [
+    "Ngày bắt đầu bộ đếm 77.000 kcal",
+    "3.400 bước theo đồng hồ (trợ lý lưu ý có thể gồm cả bước trên máy chạy)",
+    "Thâm hụt ước tính 497–647 kcal, lấy mức giữa 550 kcal"
+  ]
+}

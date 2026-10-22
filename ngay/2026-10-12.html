@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nhật ký 12/10</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1d2320;--muted:#66706a;--line:#e3e6e1;--accent:#2f7d4f;
+--accent-soft:#e3f1e8;--warn:#a5650d;--warn-soft:#fbf0dc;--info:#2b62a8;--info-soft:#e2ecf8;--bar:#d9ded8;--bad:#b4473a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141816;--card:#1c211e;--ink:#e6ebe7;
+--muted:#9aa49d;--line:#2c332f;--accent:#5fbf86;--accent-soft:#1f3328;--warn:#e0a54a;--warn-soft:#352a17;
+--info:#7aa9e6;--info-soft:#1c2a3b;--bar:#2c332f;--bad:#e57d6f}}
+:root[data-theme="dark"]{--bg:#141816;--card:#1c211e;--ink:#e6ebe7;--muted:#9aa49d;--line:#2c332f;--accent:#5fbf86;
+--accent-soft:#1f3328;--warn:#e0a54a;--warn-soft:#352a17;--info:#7aa9e6;--info-soft:#1c2a3b;--bar:#2c332f;--bad:#e57d6f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 16px 48px}
+a{color:var(--accent)}
+nav.top{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:18px}
+nav.top a{text-decoration:none}
+nav.top .off{color:var(--muted);opacity:.5}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:16px;margin:0 0 12px}
+.sub{color:var(--muted);margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{display:inline-block;white-space:nowrap;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px}
+.badge.ok{background:var(--accent-soft);color:var(--accent)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.info{background:var(--info-soft);color:var(--info)}
+.badge.muted{background:var(--bar);color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .n{font-size:12px;color:var(--muted)}
+.kpi .v.good{color:var(--accent)}
+.kpi .v.bad{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid2 .card{margin-bottom:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:650;border-bottom:none}
+.tag{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{height:10px;background:var(--bar);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+.progress>div{height:100%;background:var(--accent);border-radius:99px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted)}
+ul{margin:0;padding-left:20px}
+li{margin:4px 0}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:14px}
+dt{color:var(--muted)}
+dd{margin:0;font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font-style:italic}
+.chart{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:8px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;min-width:0}
+.chart .b{width:100%;max-width:44px;background:var(--accent);border-radius:6px 6px 0 0;min-height:2px}
+.chart .b.p{background:var(--warn)}
+.chart .b.neg{background:var(--bad)}
+.chart .x{font-size:11px;color:var(--muted)}
+.chart .t{font-size:11px;font-variant-numeric:tabular-nums}
+footer{color:var(--muted);font-size:12px;margin-top:24px}
+.kpi,.card,.col{min-width:0}
+@media (max-width:640px){.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}h1{font-size:22px}
+.kpi .v{font-size:18px}th,td{padding:7px 4px}.chart .t{font-size:9px}.hide-sm{display:none}
+td .tag{display:block}
+th:nth-child(1),td:nth-child(1){white-space:nowrap}}
+</style>
+</head>
+<body><main>
+<nav class="top"><span class="off">←</span><a href="../index.html">Tổng quan</a><a href="2026-10-13.html">13/10 →</a></nav>
+<h1>Nhật ký 12/10/2026</h1>
+<p class="sub">Thứ Hai, 12/10/2026 · Ngày thứ 1 của lộ trình <span class="badge ok">Đã tổng kết</span></p>
+<div class="kpis"><div class="kpi"><div class="l">Calo nạp</div><div class="v ">1.608–1.798</div><div class="n">còn 2–192 so với 1.800</div></div><div class="kpi"><div class="l">Tiêu hao</div><div class="v ">2.200–2.350</div><div class="n">BMR + hoạt động + tập</div></div><div class="kpi"><div class="l">Thâm hụt</div><div class="v good">550</div><div class="n">đã ghi vào bộ đếm</div></div><div class="kpi"><div class="l">Tích lũy</div><div class="v ">550</div><div class="n">0,71% / 77.000</div></div></div>
+<div class="card">
+<h2>Tiến độ mục tiêu 77.000 kcal</h2>
+<div class="progress"><div style="width:0.71%"></div></div>
+<div class="row"><span>Đã tích lũy 550 kcal</span><span>Còn 76.450 kcal</span></div>
+</div>
+<div class="card"><h2>Ăn uống</h2><table><thead><tr><th>Bữa</th><th>Món</th><th class="num">kcal</th></tr></thead><tbody><tr><td><span class="tag">Trưa</span></td><td>Bánh đa cá rô (1 tô)</td><td class="num">600</td></tr><tr><td><span class="tag">Trưa</span></td><td>Bánh in 40 g</td><td class="num">160</td></tr><tr><td><span class="tag">Xế</span></td><td>2 trứng gà luộc vừa + 1 lòng trắng trứng luộc</td><td class="num">143</td></tr><tr><td><span class="tag">Tối</span></td><td>Đùi gà hấp 200 g</td><td class="num">300–420</td></tr><tr><td><span class="tag">Tối</span></td><td>Bắp non, mướp, bí xanh hấp</td><td class="num">30–50</td></tr><tr><td><span class="tag">Tối</span></td><td>Cơm trắng 200 g</td><td class="num">260</td></tr><tr><td><span class="tag">Tối</span></td><td>Canh mọc nấu bí xanh (1 chén)</td><td class="num">80–130</td></tr><tr><td><span class="tag">Phụ</span></td><td>Dưa lưới 50 g (đã bớt từ 100 g)</td><td class="num">17</td></tr><tr><td><span class="tag">Đồ uống</span></td><td>Kombucha vị táo 5 g pha 250 ml nước</td><td class="num">18</td></tr><tr class="total"><td></td><td>Tổng</td><td class="num">1.608–1.798</td></tr></tbody></table></div>
+<div class="grid2">
+<div class="card"><h2>Vận động</h2><table><thead><tr><th>Hoạt động</th><th class="num">Thời gian</th><th class="num">kcal</th></tr></thead><tbody><tr><td>Gym (tạ)</td><td class="num">35 phút</td><td class="num">160–230</td></tr><tr><td>Đi bộ máy chạy<br><span class="tag">4,5 km/h, dốc 12%</span></td><td class="num">15 phút</td><td class="num">140–180</td></tr></tbody></table></div>
+<div class="card"><h2>Sinh hoạt</h2><dl><dt>Giấc ngủ</dt><dd>23:30 → 08:00 (8,5 giờ)</dd><dt>Nước</dt><dd>2.000 ml</dd><dt>Bước chân</dt><dd>3.400</dd><dt>Bổ sung</dt><dd>—</dd></dl></div>
+</div>
+<div class="card" style="margin-top:16px"><h2>Đánh giá</h2><ul><li>Ăn khoảng 1.703 kcal, sát mục tiêu 1.800 kcal</li><li>Vận động tốt với 50 phút tập có chủ đích; nên tăng dần lên 5.000–7.000 bước/ngày</li><li>Nước khoảng 2 lít, tương đối ổn</li><li>Ngày mai ưu tiên bổ sung đủ protein (130–150 g/ngày)</li></ul></div>
+<div class="card"><h2>Ghi chú</h2><ul><li>Ngày bắt đầu bộ đếm 77.000 kcal</li><li>3.400 bước theo đồng hồ (trợ lý lưu ý có thể gồm cả bước trên máy chạy)</li><li>Thâm hụt ước tính 497–647 kcal, lấy mức giữa 550 kcal</li></ul></div>
+<footer>Số liệu calo là ước tính, không phải phép đo trực tiếp. Mục tiêu 77.000 kcal ≈ 10 kg mỡ (7.700 kcal/kg).</footer>
+</main></body>
+</html>

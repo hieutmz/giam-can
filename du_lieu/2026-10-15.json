@@ -1,0 +1,93 @@
+{
+  "ngay": "2026-10-15",
+  "trang_thai": "da_tong_ket",
+  "ngu": {
+    "tu": "23:00",
+    "den": "07:30",
+    "gio": 8.5
+  },
+  "nuoc_ml": 1850,
+  "bo_sung": [
+    "MyVita Multi"
+  ],
+  "an_uong": [
+    {
+      "bua": "Đồ uống",
+      "mon": "Viên sủi MyVita Multi (pha 150 ml nước)",
+      "kcal_min": 8,
+      "kcal_max": 10
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Chả cá các loại 200 g (lẩu Manwah)",
+      "kcal_min": 300,
+      "kcal_max": 440
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Ba chỉ bò Mỹ 250 g (lẩu Manwah)",
+      "kcal_min": 750,
+      "kcal_max": 875
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Rau và nấm các loại 100 g",
+      "kcal_min": 20,
+      "kcal_max": 40
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Coca-Cola thường 300 ml",
+      "kcal_min": 126,
+      "kcal_max": 126
+    },
+    {
+      "bua": "Tối",
+      "mon": "Tôm luộc 100 g",
+      "kcal_min": 95,
+      "kcal_max": 100
+    },
+    {
+      "bua": "Tối",
+      "mon": "Cơm trắng 30 g",
+      "kcal_min": 39,
+      "kcal_max": 39
+    },
+    {
+      "bua": "Tối",
+      "mon": "Lòng trắng trứng (2 cái)",
+      "kcal_min": 30,
+      "kcal_max": 35
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Trà sữa 100 ml",
+      "kcal_min": 50,
+      "kcal_max": 80
+    }
+  ],
+  "buoc_chan": 3000,
+  "tap_luyen": [],
+  "nap": {
+    "min": 1418,
+    "max": 1745
+  },
+  "tieu_hao": {
+    "min": 2000,
+    "max": 2200
+  },
+  "tham_hut_ghi_nhan": 520,
+  "danh_gia": [
+    "Nạp ~1.580 kcal (1.418–1.745), có thể đã nằm trong mục tiêu 1.800 kcal",
+    "Bữa lẩu ba chỉ bò nhiều chất béo là nguồn sai số lớn nhất",
+    "Không tập, chỉ ~3.000 bước nên vận động khá thấp",
+    "Ngủ 8,5 giờ tốt; nước tương đối ổn",
+    "Protein cả ngày có thể chưa đạt 130–150 g"
+  ],
+  "ghi_chu": [
+    "Trưa ăn lẩu Manwah; lượng bò chỉnh từ 300–400 g xuống 250 g",
+    "Bắt đầu làm việc lúc 08:45",
+    "Bữa tối, tổng số bước và 1.000 ml nước được báo vào sáng 16/10",
+    "Ngoài 1.850 ml nước (gồm nước pha sủi) còn 300 ml Coca và 100 ml trà sữa (tổng chất lỏng 2.250 ml)"
+  ]
+}

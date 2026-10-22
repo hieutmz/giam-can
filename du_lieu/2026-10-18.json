@@ -1,0 +1,41 @@
+{
+  "ngay": "2026-10-18",
+  "trang_thai": "an_dinh",
+  "ngu": {
+    "tu": null,
+    "den": null,
+    "gio": null
+  },
+  "nuoc_ml": null,
+  "bo_sung": [],
+  "an_uong": [],
+  "buoc_chan": null,
+  "tap_luyen": [
+    {
+      "ten": "Gym (tạ)",
+      "phut": 45,
+      "kcal_min": 180,
+      "kcal_max": 300,
+      "chi_tiet": null
+    }
+  ],
+  "nap": {
+    "min": 1800,
+    "max": 1800
+  },
+  "tieu_hao": {
+    "min": 2000,
+    "max": 2300
+  },
+  "tham_hut_ghi_nhan": 350,
+  "danh_gia": [
+    "Kiểm soát calo tốt: 1.800 kcal đúng mục tiêu",
+    "Có buổi gym 45 phút, hỗ trợ giữ cơ",
+    "Thâm hụt ước tính 200–500 kcal, lấy mức giữa 350 kcal",
+    "Thiếu số bước chân và chi tiết buổi tập nên chưa tính sát được"
+  ],
+  "ghi_chu": [
+    "Người dùng ấn định lượng nạp 1.800 kcal, không có danh sách món ăn",
+    "Ghi lại sau, không có dữ liệu ngủ, nước, bước chân"
+  ]
+}

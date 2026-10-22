@@ -1,0 +1,105 @@
+{
+  "ngay": "2026-10-16",
+  "trang_thai": "da_tong_ket",
+  "ngu": {
+    "tu": "00:00",
+    "den": "07:30",
+    "gio": 7.5
+  },
+  "nuoc_ml": 350,
+  "bo_sung": [],
+  "an_uong": [
+    {
+      "bua": "Sáng",
+      "mon": "Bánh mì cỡ vừa + 2 trứng ốp la (có dầu)",
+      "kcal_min": 445,
+      "kcal_max": 445
+    },
+    {
+      "bua": "Sáng",
+      "mon": "Sữa đậu nành 400 ml",
+      "kcal_min": 180,
+      "kcal_max": 180
+    },
+    {
+      "bua": "Xế",
+      "mon": "3 nem rán nhỏ, 20 g bánh tráng trộn, 2 bánh su kem, 1/2 bánh rán (người dùng chốt 350 kcal)",
+      "kcal_min": 350,
+      "kcal_max": 350
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Mandu hấp (theo bao bì)",
+      "kcal_min": 377,
+      "kcal_max": 377
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Lòng trắng trứng luộc 61 g",
+      "kcal_min": 32,
+      "kcal_max": 32
+    },
+    {
+      "bua": "Tối",
+      "mon": "Bí xanh luộc 100 g",
+      "kcal_min": 15,
+      "kcal_max": 15
+    },
+    {
+      "bua": "Tối",
+      "mon": "Lòng trắng trứng luộc 140 g",
+      "kcal_min": 73,
+      "kcal_max": 73
+    },
+    {
+      "bua": "Tối",
+      "mon": "Thịt gà kho gừng 63 g",
+      "kcal_min": 110,
+      "kcal_max": 110
+    },
+    {
+      "bua": "Phụ",
+      "mon": "Sữa chua Vinamilk có đường (1 hũ)",
+      "kcal_min": 100,
+      "kcal_max": 100
+    }
+  ],
+  "buoc_chan": 2000,
+  "tap_luyen": [
+    {
+      "ten": "Gym (tạ)",
+      "phut": 30,
+      "kcal_min": 130,
+      "kcal_max": 190,
+      "chi_tiet": null
+    },
+    {
+      "ten": "Đi bộ máy chạy",
+      "phut": 15,
+      "kcal_min": 130,
+      "kcal_max": 165,
+      "chi_tiet": "4,5 km/h, dốc 12%"
+    }
+  ],
+  "nap": {
+    "min": 1682,
+    "max": 1682
+  },
+  "tieu_hao": {
+    "min": 2100,
+    "max": 2300
+  },
+  "tham_hut_ghi_nhan": 520,
+  "danh_gia": [
+    "Nạp 1.682 kcal, thấp hơn mục tiêu 1.800 kcal khoảng 118 kcal",
+    "Buổi tập 30 phút gym + 15 phút đi bộ dốc là tốt",
+    "Protein có thể chưa đạt 130–150 g",
+    "Nước lọc mới ghi nhận 350 ml, còn thấp",
+    "2.000 bước ngoài máy chạy tương đối ít"
+  ],
+  "ghi_chu": [
+    "Bữa sáng trợ lý chốt 625 kcal (bánh mì 265 + 2 trứng 150 + dầu 30 + sữa đậu nành 180)",
+    "Bữa nem rán/bánh su kem: trợ lý ước tính 325–550 kcal, người dùng ấn định 350 kcal (gọi là bữa xế; mandu mới là bữa trưa)",
+    "Ngoài 350 ml nước lọc còn 400 ml sữa đậu nành"
+  ]
+}

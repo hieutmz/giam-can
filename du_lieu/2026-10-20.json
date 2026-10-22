@@ -1,0 +1,33 @@
+{
+  "ngay": "2026-10-20",
+  "trang_thai": "tam_tinh",
+  "ngu": {"tu": "00:00", "den": "06:00", "gio": 6.0},
+  "nuoc_ml": 900,
+  "bo_sung": [],
+  "an_uong": [
+    {"bua": "Sáng", "mon": "2 bánh mì que nhỏ phô mai + pate gà", "kcal_min": 400, "kcal_max": 560},
+    {"bua": "Đồ uống", "mon": "Cà phê sữa Highlands size nhỏ", "kcal_min": 100, "kcal_max": 180},
+    {"bua": "Phụ", "mon": "200–250 g trái cây (xoài chua, dưa lưới, dưa hấu, lê)", "kcal_min": 80, "kcal_max": 130},
+    {"bua": "Tối", "mon": "Buffet hải sản, ăn rất no (chủ yếu tôm và hải sản)", "kcal_min": 1400, "kcal_max": 2200}
+  ],
+  "buoc_chan": 4000,
+  "tap_luyen": [
+    {"ten": "Gym (tạ)", "phut": 30, "kcal_min": 120, "kcal_max": 200, "chi_tiet": null},
+    {"ten": "Đi bộ máy chạy", "phut": 10, "kcal_min": 90, "kcal_max": 110, "chi_tiet": "4,5 km/h, dốc 12%"}
+  ],
+  "nap": {"min": 1980, "max": 3070},
+  "tieu_hao": {"min": 2150, "max": 2350},
+  "tham_hut_ghi_nhan": -275,
+  "danh_gia": [
+    "Ban ngày kiểm soát tốt: đến chiều mới nạp khoảng 580–870 kcal và có buổi tập buổi sáng.",
+    "Buffet tối đẩy tổng nạp lên khoảng 1.980–3.070 kcal, vượt mục tiêu 1.800 → nhiều khả năng dư nhẹ, mức giữa ≈ 275 kcal.",
+    "Một ngày dư không ảnh hưởng đáng kể đến lộ trình; hôm sau quay lại 1.800 kcal, không nhịn ăn để bù.",
+    "Bước chân 4.000 tốt hơn mức trung bình gần đây nhưng vẫn dưới mục tiêu 5.000–7.000.",
+    "Ngủ chỉ 6 tiếng và nước mới ghi nhận 900 ml — cần cải thiện cả hai."
+  ],
+  "ghi_chu": [
+    "Tạm tính: chưa rõ ở buffet có bia/nước ngọt, tráng miệng hay món chiên không. Buffet là nguồn sai số lớn nhất (1.400–2.200 kcal).",
+    "Hải sản và nước chấm nhiều muối → cân sáng 21/10 có thể tăng 0,5–1 kg do giữ nước, không phải tăng mỡ.",
+    "Tiêu hao 2.150–2.350 kcal = BMR 1.624 + sinh hoạt văn phòng + 4.000 bước + gym 30' + đi bộ máy 10' (đã tính cả 4.000 bước, không cộng trùng)."
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "ngay": "2026-10-19",
+  "trang_thai": "tam_tinh",
+  "ngu": {
+    "tu": "23:20",
+    "den": "07:30",
+    "gio": 8.17
+  },
+  "nuoc_ml": 1350,
+  "bo_sung": [
+    "MyVita Multi"
+  ],
+  "an_uong": [
+    {
+      "bua": "Đồ uống",
+      "mon": "Viên sủi MyVita Multi (pha 200 ml nước)",
+      "kcal_min": 9,
+      "kcal_max": 9
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Mì Indomie (1 gói)",
+      "kcal_min": 420,
+      "kcal_max": 420
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Sủi cảo (theo bao bì)",
+      "kcal_min": 377,
+      "kcal_max": 377
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Americano tự pha không đường 400 ml (ly 1)",
+      "kcal_min": 5,
+      "kcal_max": 10
+    },
+    {
+      "bua": "Phụ",
+      "mon": "Lòng trắng trứng luộc 120 g (4 cái)",
+      "kcal_min": 62,
+      "kcal_max": 62
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Americano tự pha không đường 400 ml (ly 2)",
+      "kcal_min": 5,
+      "kcal_max": 10
+    },
+    {
+      "bua": "Tối",
+      "mon": "Cơm trắng 200 g",
+      "kcal_min": 260,
+      "kcal_max": 260
+    },
+    {
+      "bua": "Tối",
+      "mon": "Gà hấp với nấm và mướp 200 g",
+      "kcal_min": 300,
+      "kcal_max": 360
+    }
+  ],
+  "buoc_chan": null,
+  "tap_luyen": [],
+  "nap": {
+    "min": 1438,
+    "max": 1508
+  },
+  "tieu_hao": {
+    "min": 1900,
+    "max": 2100
+  },
+  "tham_hut_ghi_nhan": 527,
+  "danh_gia": [
+    "Nạp 1.438–1.508 kcal, thấp hơn mục tiêu ~292–362 kcal; không cần giảm thêm",
+    "Protein chưa xác định chính xác, cần hướng tới 130–150 g/ngày",
+    "Ngủ 8 giờ 10 phút, đủ khuyến nghị",
+    "Đã ghi nhận 1.350 ml đồ uống (gồm cà phê); nên bổ sung nước lọc",
+    "Men gan cao: hạn chế rượu bia, đồ ngọt; Americano không đường uống vừa phải được"
+  ],
+  "ghi_chu": [
+    "Tạm tính: chưa có số bước/buổi tập; tiêu hao 1.900–2.100 kcal giả định ngày văn phòng không tập",
+    "Thâm hụt ước tính 392–662 kcal, lấy mức giữa 527 kcal",
+    "Mì Indomie người dùng chốt 420 kcal (trợ lý ước 380–450)",
+    "Bữa tối được báo vào sáng 20/10 ('tối qua'); giả định 200 g là tổng gà + nấm + mướp",
+    "nuoc_ml gồm 350 ml nước ấm + 200 ml nước pha sủi + 2 × 400 ml Americano (nước lọc thuần 550 ml)",
+    "Hỏi về men gan cao và Americano"
+  ]
+}

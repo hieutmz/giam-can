@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lộ trình giảm mỡ</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1d2320;--muted:#66706a;--line:#e3e6e1;--accent:#2f7d4f;
+--accent-soft:#e3f1e8;--warn:#a5650d;--warn-soft:#fbf0dc;--info:#2b62a8;--info-soft:#e2ecf8;--bar:#d9ded8;--bad:#b4473a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141816;--card:#1c211e;--ink:#e6ebe7;
+--muted:#9aa49d;--line:#2c332f;--accent:#5fbf86;--accent-soft:#1f3328;--warn:#e0a54a;--warn-soft:#352a17;
+--info:#7aa9e6;--info-soft:#1c2a3b;--bar:#2c332f;--bad:#e57d6f}}
+:root[data-theme="dark"]{--bg:#141816;--card:#1c211e;--ink:#e6ebe7;--muted:#9aa49d;--line:#2c332f;--accent:#5fbf86;
+--accent-soft:#1f3328;--warn:#e0a54a;--warn-soft:#352a17;--info:#7aa9e6;--info-soft:#1c2a3b;--bar:#2c332f;--bad:#e57d6f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 16px 48px}
+a{color:var(--accent)}
+nav.top{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:18px}
+nav.top a{text-decoration:none}
+nav.top .off{color:var(--muted);opacity:.5}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:16px;margin:0 0 12px}
+.sub{color:var(--muted);margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{display:inline-block;white-space:nowrap;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px}
+.badge.ok{background:var(--accent-soft);color:var(--accent)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.info{background:var(--info-soft);color:var(--info)}
+.badge.muted{background:var(--bar);color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .n{font-size:12px;color:var(--muted)}
+.kpi .v.good{color:var(--accent)}
+.kpi .v.bad{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid2 .card{margin-bottom:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:650;border-bottom:none}
+.tag{font-size:12px;color:var(--muted);white-space:nowrap}
+.progress{height:10px;background:var(--bar);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+.progress>div{height:100%;background:var(--accent);border-radius:99px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted)}
+ul{margin:0;padding-left:20px}
+li{margin:4px 0}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:14px}
+dt{color:var(--muted)}
+dd{margin:0;font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font-style:italic}
+.chart{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:8px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;min-width:0}
+.chart .b{width:100%;max-width:44px;background:var(--accent);border-radius:6px 6px 0 0;min-height:2px}
+.chart .b.p{background:var(--warn)}
+.chart .b.neg{background:var(--bad)}
+.chart .x{font-size:11px;color:var(--muted)}
+.chart .t{font-size:11px;font-variant-numeric:tabular-nums}
+footer{color:var(--muted);font-size:12px;margin-top:24px}
+.kpi,.card,.col{min-width:0}
+@media (max-width:640px){.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}h1{font-size:22px}
+.kpi .v{font-size:18px}th,td{padding:7px 4px}.chart .t{font-size:9px}.hide-sm{display:none}
+td .tag{display:block}
+th:nth-child(1),td:nth-child(1){white-space:nowrap}}
+</style>
+</head>
+<body><main>
+<h1>Lộ trình giảm mỡ</h1>
+<p class="sub">Bắt đầu 12/10/2026 · Mốc kế hoạch 21/11/2026 · Mục tiêu thâm hụt 77.000 kcal (≈10 kg mỡ)</p>
+<div class="kpis"><div class="kpi"><div class="l">Đã tích lũy</div><div class="v good">3.587</div><div class="n">4,66% mục tiêu</div></div><div class="kpi"><div class="l">Còn lại</div><div class="v ">73.413</div><div class="n">kcal</div></div><div class="kpi"><div class="l">TB / ngày</div><div class="v ">359</div><div class="n">trên 10 ngày đã ghi</div></div><div class="kpi"><div class="l">Dự kiến về 0</div><div class="v ">14/05/2027</div><div class="n">theo tốc độ hiện tại</div></div></div>
+<div class="card">
+<h2>Tiến độ</h2>
+<div class="progress"><div style="width:4.66%"></div></div>
+<div class="row"><span>3.587 / 77.000 kcal</span><span>4,66%</span></div>
+</div>
+<div class="card">
+<h2>Thâm hụt từng ngày (kcal)</h2>
+<div class="chart"><div class="col"><span class="t">550</span><div class="b" style="height:77px"></div><span class="x">12/10</span></div><div class="col"><span class="t">785</span><div class="b p" style="height:110px"></div><span class="x">13/10</span></div><div class="col"><span class="t">420</span><div class="b" style="height:59px"></div><span class="x">14/10</span></div><div class="col"><span class="t">520</span><div class="b" style="height:73px"></div><span class="x">15/10</span></div><div class="col"><span class="t">520</span><div class="b" style="height:73px"></div><span class="x">16/10</span></div><div class="col"><span class="t">0</span><div class="b" style="height:0px"></div><span class="x">17/10</span></div><div class="col"><span class="t">350</span><div class="b" style="height:49px"></div><span class="x">18/10</span></div><div class="col"><span class="t">527</span><div class="b p" style="height:74px"></div><span class="x">19/10</span></div><div class="col"><span class="t">-275</span><div class="b neg" style="height:39px"></div><span class="x">20/10</span></div><div class="col"><span class="t">190</span><div class="b" style="height:27px"></div><span class="x">21/10</span></div><div class="col"><span class="t"></span><div class="b" style="height:0px"></div><span class="x">22/10</span></div></div>
+<div class="row" style="margin-top:8px"><span><span class="badge ok">xanh</span> đã tổng kết · <span class="badge warn">cam</span> tạm tính · <span class="badge" style="color:var(--bad)">đỏ</span> dư calo</span></div>
+</div>
+<div class="card">
+<h2>Các ngày</h2>
+<table><thead><tr><th>Ngày</th><th>Trạng thái</th><th class="num">Nạp</th><th class="num hide-sm">Bước</th><th class="num">Thâm hụt</th><th class="num">Tích lũy</th></tr></thead>
+<tbody><tr><td><a href="ngay/2026-10-22.html">22/10</a> <span class="tag">Thứ Năm</span></td><td><span class="badge info">Đang ghi</span></td><td class="num">665–745</td><td class="num hide-sm">—</td><td class="num">—</td><td class="num">3.587</td></tr><tr><td><a href="ngay/2026-10-21.html">21/10</a> <span class="tag">Thứ Tư</span></td><td><span class="badge ok">Đã tổng kết</span></td><td class="num">1.520–2.050</td><td class="num hide-sm">1.000</td><td class="num">190</td><td class="num">3.587</td></tr><tr><td><a href="ngay/2026-10-20.html">20/10</a> <span class="tag">Thứ Ba</span></td><td><span class="badge warn">Tạm tính</span></td><td class="num">1.980–3.070</td><td class="num hide-sm">4.000</td><td class="num">-275</td><td class="num">3.397</td></tr><tr><td><a href="ngay/2026-10-19.html">19/10</a> <span class="tag">Thứ Hai</span></td><td><span class="badge warn">Tạm tính</span></td><td class="num">1.438–1.508</td><td class="num hide-sm">—</td><td class="num">527</td><td class="num">3.672</td></tr><tr><td><a href="ngay/2026-10-18.html">18/10</a> <span class="tag">Chủ nhật</span></td><td><span class="badge muted">Ấn định</span></td><td class="num">1.800</td><td class="num hide-sm">—</td><td class="num">350</td><td class="num">3.145</td></tr><tr><td><a href="ngay/2026-10-17.html">17/10</a> <span class="tag">Thứ Bảy</span></td><td><span class="badge muted">Ấn định</span></td><td class="num">—</td><td class="num hide-sm">—</td><td class="num">0</td><td class="num">2.795</td></tr><tr><td><a href="ngay/2026-10-16.html">16/10</a> <span class="tag">Thứ Sáu</span></td><td><span class="badge ok">Đã tổng kết</span></td><td class="num">1.682</td><td class="num hide-sm">2.000</td><td class="num">520</td><td class="num">2.795</td></tr><tr><td><a href="ngay/2026-10-15.html">15/10</a> <span class="tag">Thứ Năm</span></td><td><span class="badge ok">Đã tổng kết</span></td><td class="num">1.418–1.745</td><td class="num hide-sm">3.000</td><td class="num">520</td><td class="num">2.275</td></tr><tr><td><a href="ngay/2026-10-14.html">14/10</a> <span class="tag">Thứ Tư</span></td><td><span class="badge ok">Đã tổng kết</span></td><td class="num">1.768–1.943</td><td class="num hide-sm">3.000</td><td class="num">420</td><td class="num">1.755</td></tr><tr><td><a href="ngay/2026-10-13.html">13/10</a> <span class="tag">Thứ Ba</span></td><td><span class="badge warn">Tạm tính</span></td><td class="num">1.490</td><td class="num hide-sm">4.000</td><td class="num">785</td><td class="num">1.335</td></tr><tr><td><a href="ngay/2026-10-12.html">12/10</a> <span class="tag">Thứ Hai</span></td><td><span class="badge ok">Đã tổng kết</span></td><td class="num">1.608–1.798</td><td class="num hide-sm">3.400</td><td class="num">550</td><td class="num">550</td></tr></tbody></table>
+</div>
+<div class="grid2">
+<div class="card"><h2>Baseline InBody 05/10</h2><dl>
+<dt>Cân nặng</dt><dd>89,0 kg</dd><dt>Mỡ</dt><dd>30,9 kg (34,8%)</dd><dt>Cơ xương</dt><dd>32,8 kg</dd>
+<dt>Mỡ nội tạng</dt><dd>14</dd><dt>BMR</dt><dd>1.624 kcal</dd></dl></div>
+<div class="card"><h2>Kế hoạch mỗi ngày</h2><dl>
+<dt>Calo</dt><dd>1.800 kcal</dd><dt>Protein</dt><dd>130–150 g</dd><dt>Gym</dt><dd>5 buổi / tuần</dd>
+<dt>Bước chân</dt><dd>5.000–7.000</dd><dt>Đến 21/11</dt><dd>−2,5 đến −3,5 kg mỡ</dd></dl></div>
+</div>
+<footer>Số liệu calo là ước tính, không phải phép đo trực tiếp. Mục tiêu 77.000 kcal ≈ 10 kg mỡ (7.700 kcal/kg).</footer>
+</main></body>
+</html>

@@ -1,0 +1,123 @@
+{
+  "ngay": "2026-10-13",
+  "trang_thai": "tam_tinh",
+  "ngu": {
+    "tu": "00:00",
+    "den": "07:30",
+    "gio": 7.5
+  },
+  "nuoc_ml": 2200,
+  "bo_sung": [
+    "Kẽm DHC",
+    "MyVita Multi",
+    "Efferalgan sủi",
+    "Panadol Extra"
+  ],
+  "an_uong": [
+    {
+      "bua": "Sáng",
+      "mon": "Bánh mì chả cá",
+      "kcal_min": 450,
+      "kcal_max": 450
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Viên sủi MyVita Multi",
+      "kcal_min": 9,
+      "kcal_max": 9
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Cơm trắng 200 g",
+      "kcal_min": 260,
+      "kcal_max": 260
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Dưa mắm 30 g (ăn với thịt heo luộc)",
+      "kcal_min": 10,
+      "kcal_max": 25
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Mướp và bắp non hấp 100 g",
+      "kcal_min": 25,
+      "kcal_max": 35
+    },
+    {
+      "bua": "Trưa",
+      "mon": "Trứng gà chiên không dầu (1 quả)",
+      "kcal_min": 70,
+      "kcal_max": 80
+    },
+    {
+      "bua": "Tối",
+      "mon": "Ức gà 120 g",
+      "kcal_min": 198,
+      "kcal_max": 198
+    },
+    {
+      "bua": "Tối",
+      "mon": "Bông cải xanh luộc 200 g",
+      "kcal_min": 70,
+      "kcal_max": 70
+    },
+    {
+      "bua": "Tối",
+      "mon": "Tôm luộc 50 g",
+      "kcal_min": 50,
+      "kcal_max": 50
+    },
+    {
+      "bua": "Đồ uống",
+      "mon": "Nước điện giải 500 ml",
+      "kcal_min": 70,
+      "kcal_max": 70
+    },
+    {
+      "bua": "Tối",
+      "mon": "Cơm trắng 200 g",
+      "kcal_min": 260,
+      "kcal_max": 260
+    }
+  ],
+  "buoc_chan": 4000,
+  "tap_luyen": [
+    {
+      "ten": "Gym (tạ)",
+      "phut": 45,
+      "kcal_min": 200,
+      "kcal_max": 300,
+      "chi_tiet": null
+    },
+    {
+      "ten": "Đi bộ máy chạy",
+      "phut": 15,
+      "kcal_min": 140,
+      "kcal_max": 180,
+      "chi_tiet": "4,5 km/h, dốc 12%"
+    }
+  ],
+  "nap": {
+    "min": 1490,
+    "max": 1490
+  },
+  "tieu_hao": {
+    "min": 2200,
+    "max": 2350
+  },
+  "tham_hut_ghi_nhan": 785,
+  "danh_gia": [
+    "Ăn khoảng 1.490 kcal, thấp hơn mục tiêu ~310 kcal; không cần cắt thêm",
+    "Có gà, tôm, trứng nhưng protein có thể chưa đạt 130–150 g",
+    "4.000 bước ngoài máy + 60 phút tập là khởi đầu tốt",
+    "Ngủ 7,5 giờ và ~2,2 lít nước lọc là tương đối ổn"
+  ],
+  "ghi_chu": [
+    "Thấy mệt, ngủ trưa 20 phút; uống 1 viên Efferalgan sủi và 1 viên Panadol Extra cách nhau 2 giờ (trợ lý cảnh báo trùng paracetamol)",
+    "Bữa tối, buổi tập, nước lúc tập và số bước được báo vào sáng 14/10 ('tối qua', 'hôm qua')",
+    "4.000 bước là ngoài máy chạy (người dùng xác nhận)",
+    "Ngoài 2,2 lít nước lọc còn 500 ml nước điện giải (70 kcal), không cộng vào nuoc_ml",
+    "Thâm hụt 785 kcal là tạm tính: dữ liệu ngày 14/10 từng bị ghi nhầm vào 13/10 (trợ lý đã hạ xuống 690 rồi bỏ khi người dùng sửa ngày), chưa tính lại"
+  ]
+}
