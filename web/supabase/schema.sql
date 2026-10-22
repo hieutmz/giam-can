@@ -77,6 +77,16 @@ create table if not exists public.custom_foods (
   created_at timestamptz not null default now()
 );
 
+-- Quyền truy cập qua Data API: chỉ user đã đăng nhập (role authenticated).
+-- Cần khi tắt "Automatically expose new tables" lúc tạo project; bật thì vẫn chạy bình thường.
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods
+  to authenticated;
+revoke all on
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods
+  from anon;
+
 -- Row Level Security
 alter table public.profiles enable row level security;
 alter table public.day_logs enable row level security;
