@@ -15,18 +15,19 @@ const NAV = [
 ];
 
 export default function App() {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, loading, signOut } = useAuth();
 
   if (!supabaseConfigured) return <SetupNeeded />;
   if (loading) return <div className="center muted">Đang tải…</div>;
   if (!session) return <Login />;
 
   const needsProfile = profile && (!profile.height_cm || !profile.weight_kg);
+  const name = profile?.display_name || session.user.email?.split("@")[0] || "";
 
   return (
     <div className="app">
-      <header className="topbar">
-        <span className="brand">🥗 Giảm Cân</span>
+      <aside className="sidebar">
+        <div className="brand">🥗 Giảm Cân</div>
         <nav className="nav">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>
@@ -35,7 +36,20 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
-      </header>
+        <div className="sidebar-foot">
+          <div className="avatar" aria-hidden="true">
+            {name.charAt(0).toUpperCase()}
+          </div>
+          <div className="who">
+            <b>{name}</b>
+            <small className="muted">{session.user.email}</small>
+          </div>
+          <button className="icon-btn" onClick={signOut} aria-label="Đăng xuất" title="Đăng xuất">
+            ⎋
+          </button>
+        </div>
+      </aside>
+      <header className="mobile-bar">🥗 Giảm Cân</header>
       <main className="content">
         <Routes>
           <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Diary />} />
