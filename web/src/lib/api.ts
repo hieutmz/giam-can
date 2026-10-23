@@ -66,14 +66,14 @@ export async function getRange(from: string, to: string) {
 
 export async function listCustomFoods(): Promise<CustomFood[]> {
   const rows = check(await supabase.from("custom_foods").select("*").order("name")) as CustomFood[];
-  return rows.map((r) => ({ ...r, id: `custom:${r.id}`, group: "Thực phẩm của tôi" }));
+  return rows.map((r) => ({ ...r, id: `custom:${r.id}`, group: "Món của tôi" }));
 }
 
 export type CustomFoodInput = Omit<CustomFood, "id" | "group">;
 
 export async function addCustomFood(f: CustomFoodInput): Promise<CustomFood> {
   const row = check(await supabase.from("custom_foods").insert(f).select().single()) as CustomFood;
-  return { ...row, id: `custom:${row.id}`, group: "Thực phẩm của tôi" };
+  return { ...row, id: `custom:${row.id}`, group: "Món của tôi" };
 }
 
 export async function updateCustomFood(id: string, f: CustomFoodInput) {

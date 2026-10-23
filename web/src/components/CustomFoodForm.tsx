@@ -4,7 +4,7 @@ import type { CustomFood } from "../lib/types";
 
 const SERVINGS = ["phần", "ổ", "chén", "tô", "ly", "gói", "cái", "hộp"];
 
-/** Form tạo / sửa "Thực phẩm của tôi": giá trị theo 100 g hoặc theo 1 phần. */
+/** Form tạo / sửa "Món của tôi": giá trị theo 100 g hoặc theo 1 phần. */
 export default function CustomFoodForm({
   initial,
   initialName = "",

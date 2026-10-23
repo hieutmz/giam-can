@@ -44,8 +44,8 @@ export default function FoodPicker({
     listCustomFoods().then(setCustom).catch(() => setCustom([]));
   }, []);
 
-  const all: Item[] = useMemo(() => [...custom, ...FOODS], [custom]);
-  const results = useMemo(() => searchFoods(all, query, 40), [all, query]);
+  const mine = useMemo(() => searchFoods(custom, query, 50), [custom, query]);
+  const system = useMemo(() => searchFoods(FOODS, query, 40), [query]);
   const isServing = picked?.basis === "serving";
   const a = Number(amount) || 0;
   const p = picked ? amountNutrition(picked, a) : null;
@@ -113,34 +113,46 @@ export default function FoodPicker({
         <div className="stack">
           <input
             autoFocus
-            placeholder={`Tìm trong ${fmt(all.length)} món… (không cần gõ dấu)`}
+            placeholder="Tìm món… (không cần gõ dấu)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <ul className="pick-list">
-            {results.map((f) => (
-              <li key={f.id}>
-                <button onClick={() => pick(f)}>
-                  <span>
-                    {f.id.startsWith("custom:") && <span className="badge">của tôi</span>}
-                    {f.name}
-                    <small className="muted"> · {f.group}</small>
-                  </span>
-                  <span className="num muted">
-                    {fmt(f.kcal)} kcal/{unitLabel(f)}
-                  </span>
-                </button>
-              </li>
-            ))}
-            {results.length === 0 && (
-              <li className="pad stack">
-                <span className="muted">Không tìm thấy “{query}”.</span>
-                <button className="secondary" onClick={() => setTab("create")}>
-                  + Tạo món “{query}” và lưu lại
-                </button>
-              </li>
-            )}
-          </ul>
+          <div className="pick-scroll">
+            <div className="pick-head">
+              <span>Món của tôi</span>
+              <button className="link small" onClick={() => setTab("create")}>
+                + Tạo món
+              </button>
+            </div>
+            <ul className="pick-list">
+              {mine.map((f) => (
+                <PickRow key={f.id} f={f} onPick={pick} />
+              ))}
+              {mine.length === 0 && (
+                <li className="pad muted small">
+                  {custom.length === 0 ? "Chưa có món nào của bạn." : `Không có món nào khớp “${query}”.`}
+                </li>
+              )}
+            </ul>
+
+            <div className="pick-head">
+              <span>Thực phẩm hệ thống</span>
+              <span className="muted small">trên 100 g</span>
+            </div>
+            <ul className="pick-list">
+              {system.map((f) => (
+                <PickRow key={f.id} f={f} onPick={pick} showGroup />
+              ))}
+              {system.length === 0 && (
+                <li className="pad stack">
+                  <span className="muted small">Không tìm thấy “{query}” trong hệ thống.</span>
+                  <button className="secondary" onClick={() => setTab("create")}>
+                    + Tạo món “{query}” trong Món của tôi
+                  </button>
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
       )}
 
@@ -206,7 +218,7 @@ export default function FoodPicker({
 
       {tab === "create" && (
         <>
-          <p className="muted small">Món sẽ được lưu vào “Thực phẩm của tôi” (chỉ tài khoản của bạn thấy), sau đó chọn lượng ăn.</p>
+          <p className="muted small">Món sẽ được lưu vào “Món của tôi” (chỉ tài khoản của bạn thấy), sau đó chọn lượng ăn.</p>
           <CustomFoodForm
             key={query}
             initialName={query}
@@ -222,6 +234,22 @@ export default function FoodPicker({
         </>
       )}
     </Modal>
+  );
+}
+
+function PickRow({ f, onPick, showGroup }: { f: Item; onPick: (f: Item) => void; showGroup?: boolean }) {
+  return (
+    <li>
+      <button onClick={() => onPick(f)}>
+        <span>
+          {f.name}
+          {showGroup && <small className="muted"> · {f.group}</small>}
+        </span>
+        <span className="num muted">
+          {fmt(f.kcal)} kcal/{unitLabel(f)}
+        </span>
+      </button>
+    </li>
   );
 }
 
@@ -304,7 +332,7 @@ function QuickAdd({
       {mealSelect}
       <label className="check">
         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-        Lưu vào “Thực phẩm của tôi” để lần sau chọn nhanh (1 phần = số kcal trên)
+        Lưu vào “Món của tôi” để lần sau chọn nhanh (1 phần = số kcal trên)
       </label>
       {err && <p className="err">{err}</p>}
       <button className="primary" disabled={busy}>

@@ -153,7 +153,10 @@ textarea { resize: vertical; }
 .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
 .modal-head h2 { margin: 0; }
 .modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-.pick-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; max-height: 50vh; overflow-y: auto; }
+.pick-scroll { max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.pick-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 6px 2px 0; }
+.pick-head .link { text-transform: none; letter-spacing: 0; }
+.pick-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; }
 .pick-list li + li { border-top: 1px solid var(--line); }
 .pick-list button { width: 100%; display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; text-align: left; }
 .pick-list button:hover { background: var(--bar); }
