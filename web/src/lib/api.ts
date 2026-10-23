@@ -69,8 +69,15 @@ export async function listCustomFoods(): Promise<CustomFood[]> {
   return rows.map((r) => ({ ...r, id: `custom:${r.id}`, group: "Thực phẩm của tôi" }));
 }
 
-export async function addCustomFood(f: Omit<CustomFood, "id" | "group">) {
-  check(await supabase.from("custom_foods").insert(f));
+export type CustomFoodInput = Omit<CustomFood, "id" | "group">;
+
+export async function addCustomFood(f: CustomFoodInput): Promise<CustomFood> {
+  const row = check(await supabase.from("custom_foods").insert(f).select().single()) as CustomFood;
+  return { ...row, id: `custom:${row.id}`, group: "Thực phẩm của tôi" };
+}
+
+export async function updateCustomFood(id: string, f: CustomFoodInput) {
+  check(await supabase.from("custom_foods").update(f).eq("id", id.replace(/^custom:/, "")));
 }
 
 export async function deleteCustomFood(id: string) {

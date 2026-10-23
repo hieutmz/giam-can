@@ -118,13 +118,25 @@ export function summarizeDay(args: {
   };
 }
 
-/** Dinh dưỡng của một khẩu phần từ giá trị trên 100 g. */
-export function portion(per100: { kcal: number; protein: number; carb: number; fat: number }, grams: number) {
-  const k = grams / 100;
+type Nutrients = { kcal: number; protein: number; carb: number; fat: number };
+
+/** Nhân giá trị dinh dưỡng với một hệ số. */
+export function scale(per: Nutrients, factor: number): Nutrients {
   return {
-    kcal: per100.kcal * k,
-    protein: per100.protein * k,
-    carb: per100.carb * k,
-    fat: per100.fat * k,
+    kcal: per.kcal * factor,
+    protein: per.protein * factor,
+    carb: per.carb * factor,
+    fat: per.fat * factor,
   };
+}
+
+/** Dinh dưỡng của một khẩu phần từ giá trị trên 100 g. */
+export const portion = (per100: Nutrients, grams: number) => scale(per100, grams / 100);
+
+/**
+ * Dinh dưỡng theo lượng nhập: món tính trên 100 g thì amount là số gram,
+ * món tính theo phần thì amount là số phần.
+ */
+export function amountNutrition(food: Nutrients & { basis?: "100g" | "serving" }, amount: number) {
+  return food.basis === "serving" ? scale(food, amount) : portion(food, amount);
 }

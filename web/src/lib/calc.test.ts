@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acsmKcal, bmrMifflin, exerciseKcal, metKcal, portion, stepsKcal, summarizeDay } from "./calc";
+import { acsmKcal, amountNutrition, bmrMifflin, exerciseKcal, metKcal, portion, stepsKcal, summarizeDay } from "./calc";
 
 describe("calc", () => {
   it("BMR Mifflin cho nam 27 tuổi, 166 cm, 89 kg", () => {
@@ -26,6 +26,11 @@ describe("calc", () => {
 
   it("khẩu phần 300 g cơm (130 kcal/100 g) = 390 kcal", () => {
     expect(portion({ kcal: 130, protein: 2.7, carb: 28.2, fat: 0.3 }, 300).kcal).toBe(390);
+  });
+
+  it("món theo phần: 1,5 ổ bánh mì 450 kcal/ổ = 675 kcal; món theo 100 g nhận số gram", () => {
+    expect(amountNutrition({ kcal: 450, protein: 18, carb: 60, fat: 15, basis: "serving" }, 1.5).kcal).toBe(675);
+    expect(amountNutrition({ kcal: 130, protein: 2.7, carb: 28.2, fat: 0.3 }, 200).kcal).toBe(260);
   });
 
   it("tổng kết ngày: BMR 1624 × 1,2 + bước + tập − ăn", () => {

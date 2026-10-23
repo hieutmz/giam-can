@@ -1,12 +1,24 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { addFood, listCustomFoods } from "../lib/api";
-import { portion } from "../lib/calc";
+import { addCustomFood, addFood, listCustomFoods } from "../lib/api";
+import { amountNutrition } from "../lib/calc";
 import { fmt } from "../lib/date";
-import { FOODS, searchFoods } from "../lib/foods";
+import { FOODS, searchFoods, unitLabel } from "../lib/foods";
 import { MEALS, type CustomFood, type FoodLog, type Meal } from "../lib/types";
+import CustomFoodForm from "./CustomFoodForm";
 import Modal from "./Modal";
 
-type Item = { id: string; name: string; group?: string; kcal: number; protein: number; carb: number; fat: number };
+type Item = {
+  id: string;
+  name: string;
+  group?: string;
+  kcal: number;
+  protein: number;
+  carb: number;
+  fat: number;
+  basis?: "100g" | "serving";
+  serving_name?: string | null;
+};
+type Tab = "search" | "quick" | "create";
 
 export default function FoodPicker({
   date,
@@ -19,12 +31,12 @@ export default function FoodPicker({
   onAdded: (f: FoodLog) => void;
   onClose: () => void;
 }) {
-  const [tab, setTab] = useState<"search" | "quick">("search");
+  const [tab, setTab] = useState<Tab>("search");
   const [meal, setMeal] = useState<Meal>(initialMeal);
   const [custom, setCustom] = useState<CustomFood[]>([]);
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<Item | null>(null);
-  const [grams, setGrams] = useState("100");
+  const [amount, setAmount] = useState("100");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -34,8 +46,14 @@ export default function FoodPicker({
 
   const all: Item[] = useMemo(() => [...custom, ...FOODS], [custom]);
   const results = useMemo(() => searchFoods(all, query, 40), [all, query]);
-  const g = Number(grams) || 0;
-  const p = picked ? portion(picked, g) : null;
+  const isServing = picked?.basis === "serving";
+  const a = Number(amount) || 0;
+  const p = picked ? amountNutrition(picked, a) : null;
+
+  function pick(f: Item) {
+    setPicked(f);
+    setAmount(f.basis === "serving" ? "1" : "100");
+  }
 
   async function save(row: Omit<FoodLog, "id">) {
     setBusy(true);
@@ -51,8 +69,15 @@ export default function FoodPicker({
 
   function addPicked(e: FormEvent) {
     e.preventDefault();
-    if (!picked || !p || g <= 0) return;
-    save({ log_date: date, meal, food_ref: picked.id, name: picked.name, grams: g, ...round(p) });
+    if (!picked || !p || a <= 0) return;
+    save({
+      log_date: date,
+      meal,
+      food_ref: picked.id,
+      name: isServing ? `${picked.name} (${fmt(a, 2)} ${picked.serving_name || "phần"})` : picked.name,
+      grams: isServing ? null : a,
+      ...round(p),
+    });
   }
 
   const mealSelect = (
@@ -68,14 +93,19 @@ export default function FoodPicker({
     </label>
   );
 
+  const amountChips = isServing ? [0.5, 1, 1.5, 2, 3] : [50, 100, 150, 200, 250, 300];
+
   return (
     <Modal title="Thêm món ăn" onClose={onClose}>
       <div className="tabs">
         <button className={tab === "search" ? "active" : ""} onClick={() => setTab("search")}>
-          Tìm thực phẩm
+          Tìm món
         </button>
         <button className={tab === "quick" ? "active" : ""} onClick={() => setTab("quick")}>
-          Nhập nhanh kcal
+          Nhập nhanh
+        </button>
+        <button className={tab === "create" ? "active" : ""} onClick={() => setTab("create")}>
+          Tạo món mới
         </button>
       </div>
 
@@ -83,29 +113,34 @@ export default function FoodPicker({
         <div className="stack">
           <input
             autoFocus
-            placeholder={`Tìm trong ${fmt(all.length)} thực phẩm… (không cần gõ dấu)`}
+            placeholder={`Tìm trong ${fmt(all.length)} món… (không cần gõ dấu)`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <ul className="pick-list">
             {results.map((f) => (
               <li key={f.id}>
-                <button onClick={() => setPicked(f)}>
+                <button onClick={() => pick(f)}>
                   <span>
+                    {f.id.startsWith("custom:") && <span className="badge">của tôi</span>}
                     {f.name}
                     <small className="muted"> · {f.group}</small>
                   </span>
-                  <span className="num muted">{fmt(f.kcal)} kcal</span>
+                  <span className="num muted">
+                    {fmt(f.kcal)} kcal/{unitLabel(f)}
+                  </span>
                 </button>
               </li>
             ))}
             {results.length === 0 && (
-              <li className="muted pad">
-                Không tìm thấy. Dùng tab <b>Nhập nhanh kcal</b> hoặc thêm vào <b>Thực phẩm của tôi</b>.
+              <li className="pad stack">
+                <span className="muted">Không tìm thấy “{query}”.</span>
+                <button className="secondary" onClick={() => setTab("create")}>
+                  + Tạo món “{query}” và lưu lại
+                </button>
               </li>
             )}
           </ul>
-          <p className="muted small">Giá trị tính trên 100 g.</p>
         </div>
       )}
 
@@ -117,44 +152,96 @@ export default function FoodPicker({
           <div>
             <b>{picked.name}</b>
             <p className="muted small">
-              100 g: {fmt(picked.kcal)} kcal · P {fmt(picked.protein, 1)} g · C {fmt(picked.carb, 1)} g · F{" "}
+              {unitLabel(picked)}: {fmt(picked.kcal)} kcal · P {fmt(picked.protein, 1)} g · C {fmt(picked.carb, 1)} g · F{" "}
               {fmt(picked.fat, 1)} g
             </p>
           </div>
           <label>
-            Khối lượng (g)
-            <input type="number" inputMode="decimal" min="1" step="any" value={grams} onChange={(e) => setGrams(e.target.value)} autoFocus />
+            {isServing ? `Số ${picked.serving_name || "phần"}` : "Khối lượng (g)"}
+            <input
+              type="number"
+              inputMode="decimal"
+              min={isServing ? "0.1" : "1"}
+              step="any"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              autoFocus
+            />
           </label>
           <div className="chips">
-            {[50, 100, 150, 200, 250, 300].map((n) => (
-              <button type="button" key={n} className={g === n ? "chip active" : "chip"} onClick={() => setGrams(String(n))}>
-                {n} g
+            {amountChips.map((n) => (
+              <button type="button" key={n} className={a === n ? "chip active" : "chip"} onClick={() => setAmount(String(n))}>
+                {isServing ? `${fmt(n, 1)} ${picked.serving_name || "phần"}` : `${n} g`}
               </button>
             ))}
           </div>
           {mealSelect}
-          <div className="preview">
-            <div>
-              <span className="muted small">Năng lượng</span>
-              <b className="big">{fmt(p.kcal)} kcal</b>
-            </div>
-            <div className="macros">
-              <span>P {fmt(p.protein, 1)} g</span>
-              <span>C {fmt(p.carb, 1)} g</span>
-              <span>F {fmt(p.fat, 1)} g</span>
-            </div>
-          </div>
+          <Preview p={p} />
           {err && <p className="err">{err}</p>}
-          <button className="primary" disabled={busy || g <= 0}>
+          <button className="primary" disabled={busy || a <= 0}>
             Thêm vào nhật ký
           </button>
         </form>
       )}
 
-      {tab === "quick" && <QuickAdd mealSelect={mealSelect} busy={busy} err={err} onSave={(r) => save({ log_date: date, meal, ...r })} />}
+      {tab === "quick" && (
+        <QuickAdd
+          mealSelect={mealSelect}
+          busy={busy}
+          err={err}
+          onSave={async (r, remember) => {
+            if (remember) {
+              try {
+                const f = await addCustomFood({ ...r, basis: "serving", serving_name: "phần" });
+                setCustom((xs) => [f, ...xs]);
+              } catch (e) {
+                setErr((e as Error).message);
+                return;
+              }
+            }
+            save({ log_date: date, meal, food_ref: null, grams: null, ...r });
+          }}
+        />
+      )}
+
+      {tab === "create" && (
+        <>
+          <p className="muted small">Món sẽ được lưu vào “Thực phẩm của tôi” (chỉ tài khoản của bạn thấy), sau đó chọn lượng ăn.</p>
+          <CustomFoodForm
+            key={query}
+            initialName={query}
+            submitLabel="Lưu món"
+            onCancel={() => setTab("search")}
+            onSubmit={async (input) => {
+              const f = await addCustomFood(input);
+              setCustom((xs) => [f, ...xs]);
+              pick(f);
+              setTab("search");
+            }}
+          />
+        </>
+      )}
     </Modal>
   );
 }
+
+function Preview({ p }: { p: { kcal: number; protein: number; carb: number; fat: number } }) {
+  return (
+    <div className="preview">
+      <div>
+        <span className="muted small">Năng lượng</span>
+        <b className="big">{fmt(p.kcal)} kcal</b>
+      </div>
+      <div className="macros">
+        <span>P {fmt(p.protein, 1)} g</span>
+        <span>C {fmt(p.carb, 1)} g</span>
+        <span>F {fmt(p.fat, 1)} g</span>
+      </div>
+    </div>
+  );
+}
+
+type QuickRow = Pick<FoodLog, "name" | "kcal" | "protein" | "carb" | "fat">;
 
 function QuickAdd({
   mealSelect,
@@ -165,31 +252,33 @@ function QuickAdd({
   mealSelect: JSX.Element;
   busy: boolean;
   err: string;
-  onSave: (r: Pick<FoodLog, "name" | "kcal" | "protein" | "carb" | "fat" | "grams" | "food_ref">) => void;
+  onSave: (r: QuickRow, remember: boolean) => void;
 }) {
   const [name, setName] = useState("");
   const [kcal, setKcal] = useState("");
   const [protein, setProtein] = useState("");
   const [carb, setCarb] = useState("");
   const [fat, setFat] = useState("");
+  const [remember, setRemember] = useState(false);
 
   return (
     <form
       className="stack"
       onSubmit={(e) => {
         e.preventDefault();
-        onSave({
-          name: name.trim(),
-          kcal: Number(kcal),
-          protein: Number(protein) || 0,
-          carb: Number(carb) || 0,
-          fat: Number(fat) || 0,
-          grams: null,
-          food_ref: null,
-        });
+        onSave(
+          {
+            name: name.trim(),
+            kcal: Number(kcal),
+            protein: Number(protein) || 0,
+            carb: Number(carb) || 0,
+            fat: Number(fat) || 0,
+          },
+          remember,
+        );
       }}
     >
-      <p className="muted small">Dùng khi đã biết tổng kcal (ví dụ: trên bao bì, menu quán).</p>
+      <p className="muted small">Dùng khi đã biết tổng kcal của món (bao bì, menu quán).</p>
       <label>
         Tên món
         <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Bánh mì chả cá" />
@@ -213,6 +302,10 @@ function QuickAdd({
         </label>
       </div>
       {mealSelect}
+      <label className="check">
+        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+        Lưu vào “Thực phẩm của tôi” để lần sau chọn nhanh (1 phần = số kcal trên)
+      </label>
       {err && <p className="err">{err}</p>}
       <button className="primary" disabled={busy}>
         Thêm vào nhật ký

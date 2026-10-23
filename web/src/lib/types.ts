@@ -65,6 +65,9 @@ export type Food = {
   protein: number;
   carb: number;
   fat: number;
+  /** Giá trị dinh dưỡng tính trên 100 g (mặc định) hay trên 1 phần */
+  basis?: "100g" | "serving";
+  serving_name?: string | null;
 };
 
 export type CustomFood = Omit<Food, "group"> & { group?: string };

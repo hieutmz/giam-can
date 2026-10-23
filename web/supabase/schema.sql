@@ -65,11 +65,13 @@ create table if not exists public.exercise_logs (
 );
 create index if not exists exercise_logs_user_date on public.exercise_logs (user_id, log_date);
 
--- Thực phẩm do user tự thêm (giá trị trên 100 g)
+-- Thực phẩm do user tự thêm: giá trị trên 100 g (basis = '100g') hoặc trên 1 phần (basis = 'serving')
 create table if not exists public.custom_foods (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   name text not null,
+  basis text not null default '100g' check (basis in ('100g', 'serving')),
+  serving_name text,                      -- vd: ổ, chén, ly, gói (khi basis = 'serving')
   kcal numeric(7, 1) not null,
   protein numeric(6, 1) not null default 0,
   carb numeric(6, 1) not null default 0,
