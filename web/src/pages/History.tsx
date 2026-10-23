@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import Icon, { type IconName } from "../components/Icon";
@@ -210,9 +210,17 @@ function Tile({ icon, label, value, note, tone }: { icon: IconName; label: strin
 
 /** Biểu đồ đường cân nặng (SVG co giãn theo chiều ngang). */
 function WeightChart({ points }: { points: { date: string; kg: number }[] }) {
-  const W = 600;
-  const H = 180;
-  const pad = { l: 36, r: 12, t: 14, b: 26 };
+  const ref = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(600);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.round(e.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const H = 200;
+  const pad = { l: 36, r: 28, t: 14, b: 26 };
   const kgs = points.map((p) => p.kg);
   const min = Math.floor(Math.min(...kgs) - 0.5);
   const max = Math.ceil(Math.max(...kgs) + 0.5);
@@ -221,40 +229,42 @@ function WeightChart({ points }: { points: { date: string; kg: number }[] }) {
   const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.kg).toFixed(1)}`).join(" ");
   const area = `${line} L${x(points.length - 1).toFixed(1)},${H - pad.b} L${x(0).toFixed(1)},${H - pad.b} Z`;
   const ticks = [min, (min + max) / 2, max];
-  const labelEvery = Math.ceil(points.length / 6);
+  const labelEvery = Math.ceil(points.length / Math.max(2, Math.floor(W / 90)));
 
   return (
-    <svg className="line-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="weight chart">
-      <defs>
-        <linearGradient id="wfill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {ticks.map((tk) => (
-        <g key={tk}>
-          <line x1={pad.l} x2={W - pad.r} y1={y(tk)} y2={y(tk)} className="grid" />
-          <text x={pad.l - 6} y={y(tk) + 4} textAnchor="end" className="axis">
-            {fmt(tk, 1)}
-          </text>
-        </g>
-      ))}
-      <path d={area} fill="url(#wfill)" />
-      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-      {points.map((p, i) => (
-        <g key={p.date}>
-          <circle cx={x(i)} cy={y(p.kg)} r="4" fill="var(--surface)" stroke="var(--accent)" strokeWidth="2">
-            <title>
-              {fmtDate(p.date, "full")}: {fmt(p.kg, 1)} kg
-            </title>
-          </circle>
-          {i % labelEvery === 0 && (
-            <text x={x(i)} y={H - 6} textAnchor="middle" className="axis">
-              {fmtDate(p.date, "short")}
+    <div ref={ref}>
+      <svg className="line-chart" width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label="weight chart">
+        <defs>
+          <linearGradient id="wfill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {ticks.map((tk) => (
+          <g key={tk}>
+            <line x1={pad.l} x2={W - pad.r} y1={y(tk)} y2={y(tk)} className="grid" />
+            <text x={pad.l - 6} y={y(tk) + 4} textAnchor="end" className="axis">
+              {fmt(tk, 1)}
             </text>
-          )}
-        </g>
-      ))}
-    </svg>
+          </g>
+        ))}
+        <path d={area} fill="url(#wfill)" />
+        <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          <g key={p.date}>
+            <circle cx={x(i)} cy={y(p.kg)} r="4" fill="var(--surface)" stroke="var(--accent)" strokeWidth="2">
+              <title>
+                {fmtDate(p.date, "full")}: {fmt(p.kg, 1)} kg
+              </title>
+            </circle>
+            {i % labelEvery === 0 && (
+              <text x={x(i)} y={H - 6} textAnchor="middle" className="axis">
+                {fmtDate(p.date, "short")}
+              </text>
+            )}
+          </g>
+        ))}
+      </svg>
+    </div>
   );
 }

@@ -9,6 +9,9 @@ const en: Dict = {
   "nav.myFoods": "My foods",
   "nav.foods": "Foods",
   "nav.profile": "Profile",
+  "nav.sectionTrack": "Tracking",
+  "nav.sectionData": "Data",
+  "nav.sectionAccount": "Account",
 
   "common.loading": "Loading…",
   "common.processing": "Working…",

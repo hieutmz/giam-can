@@ -9,6 +9,9 @@ const vi = {
   "nav.myFoods": "Món của tôi",
   "nav.foods": "Thực phẩm",
   "nav.profile": "Hồ sơ",
+  "nav.sectionTrack": "Theo dõi",
+  "nav.sectionData": "Dữ liệu",
+  "nav.sectionAccount": "Tài khoản",
 
   "common.loading": "Đang tải…",
   "common.processing": "Đang xử lý…",

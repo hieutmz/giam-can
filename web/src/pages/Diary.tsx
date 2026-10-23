@@ -93,25 +93,28 @@ export default function Diary() {
 
   return (
     <div className="page wide">
-      <header className="date-bar">
-        <button className="icon-btn lg" onClick={() => go(addDays(date, -1))} aria-label={t("diary.prevDay")}>
-          <Icon name="left" />
-        </button>
-        <label className="date-pick">
-          <span className="date-main">{isToday ? t("diary.today") : cap(fmtDate(date, "weekday"))}</span>
-          <span className="date-sub">
-            <Icon name="calendar" size={14} /> {fmtDate(date, "full")}
-          </span>
-          <input type="date" value={date} onChange={(e) => e.target.value && go(e.target.value)} />
-        </label>
-        <button className="icon-btn lg" onClick={() => go(addDays(date, 1))} aria-label={t("diary.nextDay")}>
-          <Icon name="right" />
-        </button>
-        {!isToday && (
-          <button className="btn secondary sm today-btn" onClick={() => go(today())}>
+      <header className="page-head with-action">
+        <div>
+          <h1>{t("nav.diary")}</h1>
+          <p className="muted">{isToday ? `${t("diary.today")} · ${fmtDate(date, "long")}` : cap(fmtDate(date, "long"))}</p>
+        </div>
+        <div className="toolbar">
+          <div className="btn-group">
+            <button className="btn secondary sm icon-only" onClick={() => go(addDays(date, -1))} aria-label={t("diary.prevDay")}>
+              <Icon name="left" size={16} />
+            </button>
+            <label className="date-field">
+              <Icon name="calendar" size={16} />
+              <input type="date" value={date} onChange={(e) => e.target.value && go(e.target.value)} aria-label={t("col.date")} />
+            </label>
+            <button className="btn secondary sm icon-only" onClick={() => go(addDays(date, 1))} aria-label={t("diary.nextDay")}>
+              <Icon name="right" size={16} />
+            </button>
+          </div>
+          <button className="btn secondary sm" onClick={() => go(today())} disabled={isToday}>
             {t("diary.goToday")}
           </button>
-        )}
+        </div>
       </header>
 
       {error && <p className="alert err">{error}</p>}
@@ -124,7 +127,7 @@ export default function Diary() {
 
       {s && (
         <section className="card hero">
-          <Ring value={s.intake} max={target}>
+          <Ring value={s.intake} max={target} size={152} stroke={10}>
             <span className="ring-value">{fmt(Math.abs(left))}</span>
             <span className="ring-label">{left >= 0 ? t("diary.remaining") : t("diary.over")}</span>
             <span className="ring-sub">{t("diary.eatenOf", { a: fmt(s.intake), b: fmt(target) })}</span>

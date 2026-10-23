@@ -9,6 +9,9 @@ const zh: Dict = {
   "nav.myFoods": "我的食物",
   "nav.foods": "食物库",
   "nav.profile": "个人资料",
+  "nav.sectionTrack": "追踪",
+  "nav.sectionData": "数据",
+  "nav.sectionAccount": "账号",
 
   "common.loading": "加载中…",
   "common.processing": "处理中…",

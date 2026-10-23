@@ -1,9 +1,10 @@
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/AuthProvider";
 import Icon, { type IconName } from "./components/Icon";
 import PrefsMenu from "./components/PrefsMenu";
 import { useT } from "./i18n";
 import type { Key } from "./i18n/vi";
+import { fmtDate } from "./lib/date";
 import { supabaseConfigured } from "./lib/supabase";
 import Diary from "./pages/Diary";
 import Foods from "./pages/Foods";
@@ -12,12 +13,24 @@ import Login from "./pages/Login";
 import MyFoods from "./pages/MyFoods";
 import ProfilePage from "./pages/Profile";
 
-const NAV: { to: string; label: Key; icon: IconName }[] = [
-  { to: "/", label: "nav.diary", icon: "diary" },
-  { to: "/thong-ke", label: "nav.stats", icon: "stats" },
-  { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
-  { to: "/thuc-pham", label: "nav.foods", icon: "apple" },
-  { to: "/ho-so", label: "nav.profile", icon: "user" },
+type NavItem = { to: string; label: Key; icon: IconName };
+
+const NAV: { section: Key; items: NavItem[] }[] = [
+  {
+    section: "nav.sectionTrack",
+    items: [
+      { to: "/", label: "nav.diary", icon: "diary" },
+      { to: "/thong-ke", label: "nav.stats", icon: "stats" },
+    ],
+  },
+  {
+    section: "nav.sectionData",
+    items: [
+      { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
+      { to: "/thuc-pham", label: "nav.foods", icon: "apple" },
+    ],
+  },
+  { section: "nav.sectionAccount", items: [{ to: "/ho-so", label: "nav.profile", icon: "user" }] },
 ];
 
 export default function App() {
@@ -36,16 +49,21 @@ export default function App() {
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-mark">
-            <Icon name="leaf" size={20} />
+            <Icon name="leaf" size={16} />
           </span>
           <span className="brand-text">{t("app.name")}</span>
         </div>
         <nav className="nav">
-          {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === "/"} title={t(n.label)}>
-              <Icon name={n.icon} size={20} />
-              <span className="nav-label">{t(n.label)}</span>
-            </NavLink>
+          {NAV.map((g) => (
+            <div key={g.section} className="nav-group">
+              <div className="nav-section">{t(g.section)}</div>
+              {g.items.map((n) => (
+                <NavLink key={n.to} to={n.to} end={n.to === "/"} title={t(n.label)}>
+                  <Icon name={n.icon} size={18} />
+                  <span className="nav-label">{t(n.label)}</span>
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="sidebar-foot">
@@ -56,37 +74,64 @@ export default function App() {
             <b>{name}</b>
             <small>{session.user.email}</small>
           </div>
-          <div className="foot-actions">
-            <PrefsMenu placement="up" />
-            <button className="icon-btn" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
-              <Icon name="logout" size={18} />
-            </button>
-          </div>
+          <button className="icon-btn" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+            <Icon name="logout" size={18} />
+          </button>
         </div>
       </aside>
 
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark sm">
-            <Icon name="leaf" size={16} />
-          </span>
-          {t("app.name")}
-        </div>
-        <PrefsMenu placement="down" />
-      </header>
+      <div className="main-col">
+        <header className="topbar">
+          <div className="brand mobile-only">
+            <span className="brand-mark">
+              <Icon name="leaf" size={16} />
+            </span>
+            {t("app.name")}
+          </div>
+          <Breadcrumbs />
+          <div className="topbar-actions">
+            <PrefsMenu placement="down" />
+          </div>
+        </header>
 
-      <main className="content">
-        <Routes>
-          <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Diary />} />
-          <Route path="/ngay/:date" element={<Diary />} />
-          <Route path="/thong-ke" element={<History />} />
-          <Route path="/mon-cua-toi" element={<MyFoods />} />
-          <Route path="/thuc-pham" element={<Foods />} />
-          <Route path="/ho-so" element={<ProfilePage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+        <main className="content">
+          <Routes>
+            <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Diary />} />
+            <Route path="/ngay/:date" element={<Diary />} />
+            <Route path="/thong-ke" element={<History />} />
+            <Route path="/mon-cua-toi" element={<MyFoods />} />
+            <Route path="/thuc-pham" element={<Foods />} />
+            <Route path="/ho-so" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+      </div>
     </div>
+  );
+}
+
+function Breadcrumbs() {
+  const t = useT();
+  const { pathname } = useLocation();
+  const date = pathname.match(/^\/ngay\/(\d{4}-\d{2}-\d{2})$/)?.[1];
+  const item = NAV.flatMap((g) => g.items.map((i) => ({ ...i, section: g.section }))).find((i) =>
+    date ? i.to === "/" : i.to === pathname,
+  );
+  if (!item) return <div className="crumbs" />;
+  return (
+    <nav className="crumbs" aria-label="breadcrumb">
+      <span>{t(item.section)}</span>
+      <Icon name="right" size={14} />
+      {date ? (
+        <>
+          <NavLink to="/">{t(item.label)}</NavLink>
+          <Icon name="right" size={14} />
+          <b>{fmtDate(date, "full")}</b>
+        </>
+      ) : (
+        <b>{t(item.label)}</b>
+      )}
+    </nav>
   );
 }
 
