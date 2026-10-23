@@ -54,12 +54,12 @@ export async function deleteExercise(id: string) {
 export async function getRange(from: string, to: string) {
   const [days, foods, exercises] = await Promise.all([
     supabase.from("day_logs").select("*").gte("log_date", from).lte("log_date", to),
-    supabase.from("food_logs").select("log_date,kcal,protein,carb,fat").gte("log_date", from).lte("log_date", to),
+    supabase.from("food_logs").select("log_date,meal,name,kcal,protein,carb,fat").gte("log_date", from).lte("log_date", to),
     supabase.from("exercise_logs").select("log_date,kcal").gte("log_date", from).lte("log_date", to),
   ]);
   return {
     days: check(days) as DayLog[],
-    foods: check(foods) as Pick<FoodLog, "log_date" | "kcal" | "protein" | "carb" | "fat">[],
+    foods: check(foods) as Pick<FoodLog, "log_date" | "meal" | "name" | "kcal" | "protein" | "carb" | "fat">[],
     exercises: check(exercises) as Pick<ExerciseLog, "log_date" | "kcal">[],
   };
 }

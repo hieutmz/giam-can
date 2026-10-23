@@ -59,7 +59,7 @@ function applyTheme(theme: Theme) {
   if (theme === "system") delete root.dataset.theme;
   else root.dataset.theme = theme;
   const dark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#09090b" : "#ffffff");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#00292a" : "#005e60");
 }
 
 type Prefs = {

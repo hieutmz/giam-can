@@ -67,7 +67,7 @@ export default function Diary() {
     : null;
 
   const isToday = date === today();
-  const go = (d: string) => navigate(d === today() ? "/" : `/ngay/${d}`);
+  const go = (d: string) => navigate(d === today() ? "/nhat-ky" : `/ngay/${d}`);
 
   async function updateDay(patch: Partial<DayLog>) {
     setDay((d) => ({ ...(d ?? emptyDay(date)), ...patch }));

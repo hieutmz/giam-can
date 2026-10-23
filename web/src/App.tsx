@@ -1,36 +1,27 @@
-import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthProvider";
 import Icon, { type IconName } from "./components/Icon";
 import PrefsMenu from "./components/PrefsMenu";
 import { useT } from "./i18n";
 import type { Key } from "./i18n/vi";
-import { fmtDate } from "./lib/date";
 import { supabaseConfigured } from "./lib/supabase";
 import Diary from "./pages/Diary";
 import Foods from "./pages/Foods";
 import History from "./pages/History";
 import Login from "./pages/Login";
 import MyFoods from "./pages/MyFoods";
+import Overview from "./pages/Overview";
 import ProfilePage from "./pages/Profile";
 
-type NavItem = { to: string; label: Key; icon: IconName };
+type NavItem = { to: string; label: Key; icon: IconName; hideMobile?: boolean };
 
-const NAV: { section: Key; items: NavItem[] }[] = [
-  {
-    section: "nav.sectionTrack",
-    items: [
-      { to: "/", label: "nav.diary", icon: "diary" },
-      { to: "/thong-ke", label: "nav.stats", icon: "stats" },
-    ],
-  },
-  {
-    section: "nav.sectionData",
-    items: [
-      { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
-      { to: "/thuc-pham", label: "nav.foods", icon: "apple" },
-    ],
-  },
-  { section: "nav.sectionAccount", items: [{ to: "/ho-so", label: "nav.profile", icon: "user" }] },
+const NAV: NavItem[] = [
+  { to: "/", label: "nav.overview", icon: "trend" },
+  { to: "/nhat-ky", label: "nav.diary", icon: "diary" },
+  { to: "/thong-ke", label: "nav.stats", icon: "stats" },
+  { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
+  { to: "/thuc-pham", label: "nav.foods", icon: "apple", hideMobile: true },
+  { to: "/ho-so", label: "nav.profile", icon: "user" },
 ];
 
 export default function App() {
@@ -46,92 +37,56 @@ export default function App() {
 
   return (
     <div className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          <span className="brand-mark">
-            <Icon name="leaf" size={16} />
-          </span>
-          <span className="brand-text">{t("app.name")}</span>
-        </div>
-        <nav className="nav">
-          {NAV.map((g) => (
-            <div key={g.section} className="nav-group">
-              <div className="nav-section">{t(g.section)}</div>
-              {g.items.map((n) => (
-                <NavLink key={n.to} to={n.to} end={n.to === "/"} title={t(n.label)}>
-                  <Icon name={n.icon} size={18} />
-                  <span className="nav-label">{t(n.label)}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <div className="sidebar-foot">
-          <div className="avatar" aria-hidden="true">
-            {name.charAt(0).toUpperCase()}
-          </div>
-          <div className="who">
-            <b>{name}</b>
-            <small>{session.user.email}</small>
-          </div>
-          <button className="icon-btn" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
-            <Icon name="logout" size={18} />
-          </button>
-        </div>
-      </aside>
-
-      <div className="main-col">
-        <header className="topbar">
-          <div className="brand mobile-only">
+      <header className="topnav">
+        <div className="topnav-inner">
+          <NavLink to="/" className="brand">
             <span className="brand-mark">
-              <Icon name="leaf" size={16} />
+              <Icon name="leaf" size={18} />
             </span>
-            {t("app.name")}
-          </div>
-          <Breadcrumbs />
-          <div className="topbar-actions">
+            <span className="brand-text">{t("app.name")}</span>
+          </NavLink>
+          <nav className="nav" aria-label="main">
+            {NAV.map((n) => (
+              <NavLink key={n.to} to={n.to} end={n.to === "/"}>
+                {t(n.label)}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="topnav-actions">
             <PrefsMenu placement="down" />
+            <NavLink to="/ho-so" className="user-chip" title={session.user.email}>
+              <span className="avatar">{name.charAt(0).toUpperCase()}</span>
+              <span className="user-name">{name}</span>
+            </NavLink>
+            <button className="icon-btn" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+              <Icon name="logout" size={18} />
+            </button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="content">
-          <Routes>
-            <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Diary />} />
-            <Route path="/ngay/:date" element={<Diary />} />
-            <Route path="/thong-ke" element={<History />} />
-            <Route path="/mon-cua-toi" element={<MyFoods />} />
-            <Route path="/thuc-pham" element={<Foods />} />
-            <Route path="/ho-so" element={<ProfilePage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
+      <main className="content">
+        <Routes>
+          <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Overview />} />
+          <Route path="/nhat-ky" element={<Diary />} />
+          <Route path="/ngay/:date" element={<Diary />} />
+          <Route path="/thong-ke" element={<History />} />
+          <Route path="/mon-cua-toi" element={<MyFoods />} />
+          <Route path="/thuc-pham" element={<Foods />} />
+          <Route path="/ho-so" element={<ProfilePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+
+      <nav className="tabbar" aria-label="tabs">
+        {NAV.filter((n) => !n.hideMobile).map((n) => (
+          <NavLink key={n.to} to={n.to} end={n.to === "/"}>
+            <Icon name={n.icon} size={20} />
+            <span>{t(n.label)}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
-  );
-}
-
-function Breadcrumbs() {
-  const t = useT();
-  const { pathname } = useLocation();
-  const date = pathname.match(/^\/ngay\/(\d{4}-\d{2}-\d{2})$/)?.[1];
-  const item = NAV.flatMap((g) => g.items.map((i) => ({ ...i, section: g.section }))).find((i) =>
-    date ? i.to === "/" : i.to === pathname,
-  );
-  if (!item) return <div className="crumbs" />;
-  return (
-    <nav className="crumbs" aria-label="breadcrumb">
-      <span>{t(item.section)}</span>
-      <Icon name="right" size={14} />
-      {date ? (
-        <>
-          <NavLink to="/">{t(item.label)}</NavLink>
-          <Icon name="right" size={14} />
-          <b>{fmtDate(date, "full")}</b>
-        </>
-      ) : (
-        <b>{t(item.label)}</b>
-      )}
-    </nav>
   );
 }
 

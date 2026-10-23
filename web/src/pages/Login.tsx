@@ -68,7 +68,7 @@ export default function Login() {
           <span className="brand-mark">
             <Icon name="leaf" size={20} />
           </span>
-          {t("app.name")}
+          <span className="brand-text">{t("app.name")}</span>
         </div>
         <h1>{t("login.heroTitle")}</h1>
         <ul className="features">
@@ -90,7 +90,7 @@ export default function Login() {
             <span className="brand-mark">
               <Icon name="leaf" size={20} />
             </span>
-            {t("app.name")}
+            <span className="brand-text">{t("app.name")}</span>
           </div>
           <div>
             <h2 className="auth-title">{title}</h2>
