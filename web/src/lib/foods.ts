@@ -10,8 +10,8 @@ export const FOODS: Food[] = Object.values(parts)
 export const FOOD_GROUPS: string[] = [...new Set(FOODS.map((f) => f.group))];
 
 /** Đơn vị mà giá trị dinh dưỡng của món đang tính theo, vd "100 g" hoặc "1 ổ". */
-export const unitLabel = (f: Pick<Food, "basis" | "serving_name">) =>
-  f.basis === "serving" ? `1 ${f.serving_name || "phần"}` : "100 g";
+export const unitLabel = (f: Pick<Food, "basis" | "serving_name">, servingWord = "phần") =>
+  f.basis === "serving" ? `1 ${f.serving_name || servingWord}` : "100 g";
 
 /** Bỏ dấu tiếng Việt + chữ thường để tìm kiếm không cần gõ dấu. */
 export function normalize(s: string) {

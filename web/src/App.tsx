@@ -1,5 +1,9 @@
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthProvider";
+import Icon, { type IconName } from "./components/Icon";
+import PrefsMenu from "./components/PrefsMenu";
+import { useT } from "./i18n";
+import type { Key } from "./i18n/vi";
 import { supabaseConfigured } from "./lib/supabase";
 import Diary from "./pages/Diary";
 import Foods from "./pages/Foods";
@@ -8,19 +12,20 @@ import Login from "./pages/Login";
 import MyFoods from "./pages/MyFoods";
 import ProfilePage from "./pages/Profile";
 
-const NAV = [
-  { to: "/", label: "Nhật ký", icon: "📒" },
-  { to: "/thong-ke", label: "Thống kê", icon: "📈" },
-  { to: "/mon-cua-toi", label: "Món của tôi", icon: "⭐" },
-  { to: "/thuc-pham", label: "Thực phẩm", icon: "🥦" },
-  { to: "/ho-so", label: "Hồ sơ", icon: "👤" },
+const NAV: { to: string; label: Key; icon: IconName }[] = [
+  { to: "/", label: "nav.diary", icon: "diary" },
+  { to: "/thong-ke", label: "nav.stats", icon: "stats" },
+  { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
+  { to: "/thuc-pham", label: "nav.foods", icon: "apple" },
+  { to: "/ho-so", label: "nav.profile", icon: "user" },
 ];
 
 export default function App() {
+  const t = useT();
   const { session, profile, loading, signOut } = useAuth();
 
   if (!supabaseConfigured) return <SetupNeeded />;
-  if (loading) return <div className="center muted">Đang tải…</div>;
+  if (loading) return <div className="center muted">{t("common.loading")}</div>;
   if (!session) return <Login />;
 
   const needsProfile = profile && (!profile.height_cm || !profile.weight_kg);
@@ -29,12 +34,17 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <div className="brand">🥗 Giảm Cân</div>
+        <div className="brand">
+          <span className="brand-mark">
+            <Icon name="leaf" size={20} />
+          </span>
+          <span className="brand-text">{t("app.name")}</span>
+        </div>
         <nav className="nav">
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === "/"}>
-              <span className="nav-icon">{n.icon}</span>
-              <span>{n.label}</span>
+            <NavLink key={n.to} to={n.to} end={n.to === "/"} title={t(n.label)}>
+              <Icon name={n.icon} size={20} />
+              <span className="nav-label">{t(n.label)}</span>
             </NavLink>
           ))}
         </nav>
@@ -44,14 +54,27 @@ export default function App() {
           </div>
           <div className="who">
             <b>{name}</b>
-            <small className="muted">{session.user.email}</small>
+            <small>{session.user.email}</small>
           </div>
-          <button className="icon-btn" onClick={signOut} aria-label="Đăng xuất" title="Đăng xuất">
-            ⎋
-          </button>
+          <div className="foot-actions">
+            <PrefsMenu placement="up" />
+            <button className="icon-btn" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+              <Icon name="logout" size={18} />
+            </button>
+          </div>
         </div>
       </aside>
-      <header className="mobile-bar">🥗 Giảm Cân</header>
+
+      <header className="topbar">
+        <div className="brand">
+          <span className="brand-mark sm">
+            <Icon name="leaf" size={16} />
+          </span>
+          {t("app.name")}
+        </div>
+        <PrefsMenu placement="down" />
+      </header>
+
       <main className="content">
         <Routes>
           <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Diary />} />
@@ -68,14 +91,24 @@ export default function App() {
 }
 
 function SetupNeeded() {
+  const t = useT();
+  const code = (s: string) => `<code>${s}</code>`;
   return (
     <div className="center">
-      <div className="card narrow">
-        <h1>Chưa cấu hình Supabase</h1>
-        <p>
-          Tạo file <code>web/.env.local</code> với <code>VITE_SUPABASE_URL</code> và <code>VITE_SUPABASE_ANON_KEY</code>{" "}
-          (xem <code>.env.example</code>), rồi chạy lại <code>npm run dev</code>.
-        </p>
+      <div className="card narrow stack">
+        <h1>{t("setup.title")}</h1>
+        <p
+          // Nội dung tĩnh từ từ điển, không chứa dữ liệu người dùng
+          dangerouslySetInnerHTML={{
+            __html: t("setup.body", {
+              file: code("web/.env.local"),
+              url: code("VITE_SUPABASE_URL"),
+              key: code("VITE_SUPABASE_ANON_KEY"),
+              example: code(".env.example"),
+              cmd: code("npm run dev"),
+            }),
+          }}
+        />
       </div>
     </div>
   );

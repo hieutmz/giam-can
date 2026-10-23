@@ -1,3 +1,5 @@
+import { usePrefs } from "../i18n";
+import { groupLabel } from "../i18n/labels";
 import { fmt } from "../lib/date";
 import { unitLabel } from "../lib/foods";
 import type { CustomFood, Food } from "../lib/types";
@@ -11,17 +13,19 @@ export default function FoodTable({
   showGroup?: boolean;
   actions?: (f: Food | CustomFood) => JSX.Element;
 }) {
-  if (rows.length === 0) return <p className="muted">Không có kết quả.</p>;
+  const p = usePrefs();
+  const { t } = p;
+  if (rows.length === 0) return <p className="muted empty">{t("common.noResults")}</p>;
   return (
     <div className="table-wrap">
-      <table>
+      <table className="table">
         <thead>
           <tr>
-            <th>Tên</th>
+            <th>{t("col.name")}</th>
             <th className="num">kcal</th>
-            <th className="num">Protein</th>
-            <th className="num">Carb</th>
-            <th className="num">Fat</th>
+            <th className="num">{t("macro.protein")}</th>
+            <th className="num hide-sm">{t("macro.carb")}</th>
+            <th className="num hide-sm">{t("macro.fat")}</th>
             {actions && <th />}
           </tr>
         </thead>
@@ -29,17 +33,21 @@ export default function FoodTable({
           {rows.map((f) => (
             <tr key={f.id}>
               <td>
-                {f.name}
-                <br />
+                <span className="cell-title">{f.name}</span>
                 <small className="muted">
-                  {showGroup ? `${f.group} · ` : ""}trên {unitLabel(f)}
+                  {showGroup && f.group ? `${groupLabel(p, f.group)} · ` : ""}
+                  {t("unit.per", { unit: unitLabel(f, t("unit.serving")) })}
                 </small>
               </td>
-              <td className="num">{fmt(Number(f.kcal))}</td>
+              <td className="num strong">{fmt(Number(f.kcal))}</td>
               <td className="num">{fmt(Number(f.protein), 1)}</td>
-              <td className="num">{fmt(Number(f.carb), 1)}</td>
-              <td className="num">{fmt(Number(f.fat), 1)}</td>
-              {actions && <td className="num">{actions(f)}</td>}
+              <td className="num hide-sm">{fmt(Number(f.carb), 1)}</td>
+              <td className="num hide-sm">{fmt(Number(f.fat), 1)}</td>
+              {actions && (
+                <td className="num">
+                  <div className="row-actions">{actions(f)}</div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

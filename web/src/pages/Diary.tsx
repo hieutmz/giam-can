@@ -3,16 +3,24 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import ExercisePicker from "../components/ExercisePicker";
 import FoodPicker from "../components/FoodPicker";
+import Icon, { type IconName } from "../components/Icon";
+import Ring from "../components/Ring";
+import { usePrefs } from "../i18n";
+import { exerciseLabel } from "../i18n/labels";
 import { deleteExercise, deleteFood, getDay, saveDay } from "../lib/api";
 import { effectiveBmr, stepsKcal, summarizeDay } from "../lib/calc";
-import { addDays, fmt, formatVN, today } from "../lib/date";
+import { addDays, fmt, fmtDate, today } from "../lib/date";
 import { MEALS, type DayLog, type ExerciseLog, type FoodLog, type Meal } from "../lib/types";
+
+const MEAL_ICON: Record<Meal, IconName> = { sang: "sunrise", trua: "soup", xe: "coffee", toi: "utensils", phu: "cookie" };
 
 export default function Diary() {
   const { date: param } = useParams();
   const date = param ?? today();
   const navigate = useNavigate();
   const { session, profile } = useAuth();
+  const prefs = usePrefs();
+  const { t } = prefs;
 
   const [day, setDay] = useState<DayLog | null>(null);
   const [foods, setFoods] = useState<FoodLog[]>([]);
@@ -38,7 +46,7 @@ export default function Diary() {
   }, [date]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   if (!profile || !session) return null;
@@ -58,11 +66,11 @@ export default function Diary() {
       })
     : null;
 
+  const isToday = date === today();
   const go = (d: string) => navigate(d === today() ? "/" : `/ngay/${d}`);
 
   async function updateDay(patch: Partial<DayLog>) {
-    const next = { ...(day ?? emptyDay(date)), ...patch };
-    setDay(next);
+    setDay((d) => ({ ...(d ?? emptyDay(date)), ...patch }));
     try {
       await saveDay(session!.user.id, { ...patch, log_date: date });
     } catch (e) {
@@ -81,183 +89,210 @@ export default function Diary() {
   }
 
   const target = profile.kcal_target;
-  const pct = s ? Math.min(100, (s.intake / target) * 100) : 0;
+  const left = s ? target - s.intake : target;
 
   return (
-    <div className="stack-lg">
-      <div className="date-bar">
-        <button className="icon-btn" onClick={() => go(addDays(date, -1))} aria-label="Ngày trước">
-          ←
+    <div className="page wide">
+      <header className="date-bar">
+        <button className="icon-btn lg" onClick={() => go(addDays(date, -1))} aria-label={t("diary.prevDay")}>
+          <Icon name="left" />
         </button>
         <label className="date-pick">
-          <b>{date === today() ? "Hôm nay" : formatVN(date)}</b>
+          <span className="date-main">{isToday ? t("diary.today") : cap(fmtDate(date, "weekday"))}</span>
+          <span className="date-sub">
+            <Icon name="calendar" size={14} /> {fmtDate(date, "full")}
+          </span>
           <input type="date" value={date} onChange={(e) => e.target.value && go(e.target.value)} />
         </label>
-        <button className="icon-btn" onClick={() => go(addDays(date, 1))} aria-label="Ngày sau">
-          →
+        <button className="icon-btn lg" onClick={() => go(addDays(date, 1))} aria-label={t("diary.nextDay")}>
+          <Icon name="right" />
         </button>
-      </div>
+        {!isToday && (
+          <button className="btn secondary sm today-btn" onClick={() => go(today())}>
+            {t("diary.goToday")}
+          </button>
+        )}
+      </header>
 
-      {error && <p className="err">{error}</p>}
+      {error && <p className="alert err">{error}</p>}
 
       {!bmr && (
-        <div className="card warn-card">
-          Chưa đủ thông tin để tính tiêu hao. <Link to="/ho-so">Cập nhật hồ sơ</Link> (chiều cao, cân nặng, năm sinh hoặc BMR từ InBody).
+        <div className="alert warn">
+          {t("diary.needProfile")} <Link to="/ho-so">{t("diary.updateProfile")}</Link> ({t("diary.needProfileHint")}).
         </div>
       )}
 
       {s && (
-        <section className="kpis">
-          <Kpi label="Nạp vào" value={fmt(s.intake)} note={`mục tiêu ${fmt(target)}`} />
-          <Kpi label="Tiêu hao" value={fmt(s.tdee)} note="BMR + sinh hoạt + tập" />
-          <Kpi
-            label={s.deficit >= 0 ? "Thâm hụt" : "Dư"}
-            value={fmt(Math.abs(s.deficit))}
-            note={foods.length ? "kcal" : "chưa nhập món ăn"}
-            tone={foods.length ? (s.deficit >= 0 ? "good" : "bad") : undefined}
-          />
-          <Kpi
-            label="Protein"
-            value={`${fmt(s.protein)} g`}
-            note={`mục tiêu ${profile.protein_target} g`}
-            tone={s.protein >= profile.protein_target ? "good" : undefined}
-          />
+        <section className="card hero">
+          <Ring value={s.intake} max={target}>
+            <span className="ring-value">{fmt(Math.abs(left))}</span>
+            <span className="ring-label">{left >= 0 ? t("diary.remaining") : t("diary.over")}</span>
+            <span className="ring-sub">{t("diary.eatenOf", { a: fmt(s.intake), b: fmt(target) })}</span>
+          </Ring>
+          <div className="hero-stats">
+            <Stat icon="utensils" tone="accent" label={t("kpi.intake")} value={fmt(s.intake)} note={t("kpi.target", { n: fmt(target) })} />
+            <Stat icon="flame" tone="burn" label={t("kpi.burn")} value={fmt(s.tdee)} note={t("kpi.burnNote")} />
+            <Stat
+              icon="trend"
+              tone={!foods.length ? undefined : s.deficit >= 0 ? "good" : "bad"}
+              label={s.deficit >= 0 ? t("kpi.deficit") : t("kpi.surplus")}
+              value={foods.length ? fmt(Math.abs(s.deficit)) : "—"}
+              note={foods.length ? "kcal" : t("kpi.noFood")}
+            />
+            <div className="macros">
+              <MacroBar label={t("macro.protein")} value={s.protein} max={profile.protein_target} cls="p" />
+              <MacroBar label={t("macro.carb")} value={s.carb} cls="c" />
+              <MacroBar label={t("macro.fat")} value={s.fat} cls="f" />
+            </div>
+          </div>
         </section>
       )}
 
-      {s && (
-        <div className="card">
-          <div className="row-between small">
-            <span>
-              Đã ăn {fmt(s.intake)} / {fmt(target)} kcal
-            </span>
-            <span className="muted">
-              {s.intake <= target ? `còn ${fmt(target - s.intake)}` : `vượt ${fmt(s.intake - target)}`}
-            </span>
+      <div className="diary-grid">
+        <section className="card">
+          <div className="card-head">
+            <h2>
+              <Icon name="utensils" size={18} /> {t("diary.food")}
+            </h2>
+            <button className="btn primary sm" onClick={() => setFoodModal(defaultMeal())}>
+              <Icon name="plus" size={16} /> {t("diary.addFood")}
+            </button>
           </div>
-          <div className={s.intake > target ? "progress over" : "progress"}>
-            <div style={{ width: `${pct}%` }} />
-          </div>
-          <div className="macros small muted">
-            <span>Protein {fmt(s.protein, 1)} g</span>
-            <span>Carb {fmt(s.carb, 1)} g</span>
-            <span>Fat {fmt(s.fat, 1)} g</span>
-          </div>
-        </div>
-      )}
-
-      <section className="card">
-        <div className="row-between">
-          <h2>Ăn uống</h2>
-          <button className="primary sm" onClick={() => setFoodModal(defaultMeal())}>
-            + Thêm món
-          </button>
-        </div>
-        {loading ? (
-          <p className="muted">Đang tải…</p>
-        ) : (
-          MEALS.map((m) => {
-            const items = foods.filter((f) => f.meal === m.id);
-            if (!items.length) return null;
-            const total = items.reduce((a, f) => a + Number(f.kcal), 0);
-            return (
-              <div key={m.id} className="meal">
-                <div className="row-between meal-head">
-                  <b>{m.label}</b>
-                  <span className="num muted">{fmt(total)} kcal</span>
+          {loading ? (
+            <p className="muted empty">{t("common.loading")}</p>
+          ) : (
+            MEALS.map((m) => {
+              const items = foods.filter((f) => f.meal === m);
+              const total = items.reduce((a, f) => a + Number(f.kcal), 0);
+              return (
+                <div key={m} className="meal">
+                  <div className="meal-head">
+                    <span className="meal-icon">
+                      <Icon name={MEAL_ICON[m]} size={16} />
+                    </span>
+                    <b>{t(`meal.${m}`)}</b>
+                    <span className="num muted">{items.length ? `${fmt(total)} kcal` : ""}</span>
+                    <button className="icon-btn sm" onClick={() => setFoodModal(m)} aria-label={t("diary.addTo", { meal: t(`meal.${m}`) })}>
+                      <Icon name="plus" size={16} />
+                    </button>
+                  </div>
+                  {items.length > 0 && (
+                    <ul className="entries">
+                      {items.map((f) => (
+                        <li key={f.id}>
+                          <div className="entry-main">
+                            <span className="entry-name">{f.name}</span>
+                            <small className="muted">
+                              {f.grams ? `${fmt(Number(f.grams))} g · ` : ""}
+                              {t("macro.p")} {fmt(Number(f.protein), 1)} · {t("macro.c")} {fmt(Number(f.carb), 1)} · {t("macro.f")}{" "}
+                              {fmt(Number(f.fat), 1)}
+                            </small>
+                          </div>
+                          <span className="num strong">{fmt(Number(f.kcal))}</span>
+                          <button className="icon-btn sm danger" onClick={() => removeFood(f.id)} aria-label={t("common.delete", { name: f.name })}>
+                            <Icon name="trash" size={16} />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <ul className="entries">
-                  {items.map((f) => (
-                    <li key={f.id}>
-                      <div>
-                        {f.name}
-                        <small className="muted">
-                          {f.grams ? ` · ${fmt(Number(f.grams))} g` : ""} · P {fmt(Number(f.protein), 1)} · C {fmt(Number(f.carb), 1)} · F{" "}
-                          {fmt(Number(f.fat), 1)}
-                        </small>
-                      </div>
-                      <span className="num">{fmt(Number(f.kcal))}</span>
-                      <button className="icon-btn danger" onClick={() => removeFood(f.id)} aria-label={`Xóa ${f.name}`}>
-                        ✕
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })
-        )}
-        {!loading && !foods.length && <p className="muted">Chưa có món nào.</p>}
-      </section>
+              );
+            })
+          )}
+        </section>
 
-      <section className="card">
-        <div className="row-between">
-          <h2>Vận động</h2>
-          <button className="primary sm" onClick={() => setExModal(true)}>
-            + Thêm bài tập
-          </button>
-        </div>
-        <ul className="entries">
-          {exercises.map((e) => (
-            <li key={e.id}>
-              <div>
-                {e.name}
-                <small className="muted"> · {fmt(Number(e.minutes))} phút</small>
-              </div>
-              <span className="num">{fmt(Number(e.kcal))}</span>
-              <button className="icon-btn danger" onClick={() => removeExercise(e.id)} aria-label={`Xóa ${e.name}`}>
-                ✕
+        <div className="side-col">
+          <section className="card">
+            <div className="card-head">
+              <h2>
+                <Icon name="dumbbell" size={18} /> {t("diary.exercise")}
+              </h2>
+              <button className="btn primary sm" onClick={() => setExModal(true)}>
+                <Icon name="plus" size={16} /> {t("diary.addExercise")}
               </button>
-            </li>
-          ))}
-        </ul>
-        <div className="field-row">
-          <NumberField
-            label="Bước chân"
-            hint="không tính phần đi trên máy chạy"
-            value={day?.steps ?? null}
-            onSave={(v) => updateDay({ steps: v })}
-          />
-          <span className="num muted">{day?.steps ? `${fmt(stepsKcal(day.steps, weight, height))} kcal` : ""}</span>
-        </div>
-        {s && (
-          <p className="muted small">
-            Tiêu hao = nền {fmt(s.baseline)} (BMR {fmt(bmr)} × {profile.activity_factor}) + bước chân {fmt(s.stepsKcal)} + tập{" "}
-            {fmt(s.exerciseKcal)} = <b>{fmt(s.tdee)} kcal</b>
-          </p>
-        )}
-      </section>
-
-      <section className="card">
-        <h2>Sinh hoạt</h2>
-        <div className="grid2">
-          <div>
-            <NumberField label="Nước (ml)" value={day?.water_ml ?? null} onSave={(v) => updateDay({ water_ml: v })} />
-            <div className="chips">
-              {[250, 500].map((n) => (
-                <button key={n} className="chip" onClick={() => updateDay({ water_ml: (day?.water_ml ?? 0) + n })}>
-                  +{n} ml
-                </button>
-              ))}
             </div>
-          </div>
-          <NumberField label="Giấc ngủ (giờ)" step="0.25" value={day?.sleep_hours ?? null} onSave={(v) => updateDay({ sleep_hours: v })} />
-          <NumberField label="Cân nặng sáng (kg)" step="0.1" value={day?.weight_kg ?? null} onSave={(v) => updateDay({ weight_kg: v })} />
-        </div>
-        <label>
-          Ghi chú
-          <textarea
-            rows={2}
-            defaultValue={day?.note ?? ""}
-            key={`note-${date}-${loading}`}
-            onBlur={(e) => e.target.value !== (day?.note ?? "") && updateDay({ note: e.target.value || null })}
-          />
-        </label>
-      </section>
+            {exercises.length === 0 && !loading && <p className="muted small">{t("diary.noExercise")}</p>}
+            <ul className="entries">
+              {exercises.map((e) => {
+                const label = exerciseLabel(prefs, e);
+                return (
+                  <li key={e.id}>
+                    <div className="entry-main">
+                      <span className="entry-name">{label}</span>
+                      <small className="muted">{t("common.minutes", { n: fmt(Number(e.minutes)) })}</small>
+                    </div>
+                    <span className="num strong burn">−{fmt(Number(e.kcal))}</span>
+                    <button className="icon-btn sm danger" onClick={() => removeExercise(e.id)} aria-label={t("common.delete", { name: label })}>
+                      <Icon name="trash" size={16} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="field-row">
+              <NumberField
+                icon="footprints"
+                label={t("diary.steps")}
+                hint={t("diary.stepsHint")}
+                value={day?.steps ?? null}
+                onSave={(v) => updateDay({ steps: v })}
+              />
+              <span className="num muted">{day?.steps ? `−${fmt(stepsKcal(day.steps, weight, height))} kcal` : ""}</span>
+            </div>
+            {s && (
+              <p className="formula">
+                {t("diary.formula", {
+                  base: fmt(s.baseline),
+                  bmr: fmt(bmr),
+                  f: fmt(Number(profile.activity_factor), 2),
+                  steps: fmt(s.stepsKcal),
+                  ex: fmt(s.exerciseKcal),
+                  tdee: fmt(s.tdee),
+                })}
+              </p>
+            )}
+          </section>
 
-      {foodModal && (
-        <FoodPicker date={date} meal={foodModal} onClose={() => setFoodModal(null)} onAdded={(f) => setFoods((xs) => [...xs, f])} />
-      )}
+          <section className="card">
+            <div className="card-head">
+              <h2>
+                <Icon name="leaf" size={18} /> {t("diary.lifestyle")}
+              </h2>
+            </div>
+            <div className="stack">
+              <div>
+                <NumberField icon="droplet" label={t("diary.water")} value={day?.water_ml ?? null} onSave={(v) => updateDay({ water_ml: v })} />
+                <div className="chips">
+                  {[250, 500].map((n) => (
+                    <button key={n} className="chip" onClick={() => updateDay({ water_ml: (day?.water_ml ?? 0) + n })}>
+                      +{n} ml
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="row2">
+                <NumberField icon="bed" label={t("diary.sleep")} step="0.25" value={day?.sleep_hours ?? null} onSave={(v) => updateDay({ sleep_hours: v })} />
+                <NumberField icon="scale" label={t("diary.weight")} step="0.1" value={day?.weight_kg ?? null} onSave={(v) => updateDay({ weight_kg: v })} />
+              </div>
+              <label>
+                <span className="label-icon">
+                  <Icon name="note" size={14} /> {t("diary.note")}
+                </span>
+                <textarea
+                  rows={3}
+                  placeholder={t("diary.notePh")}
+                  defaultValue={day?.note ?? ""}
+                  key={`note-${date}-${loading}`}
+                  onBlur={(e) => e.target.value !== (day?.note ?? "") && updateDay({ note: e.target.value || null })}
+                />
+              </label>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {foodModal && <FoodPicker date={date} meal={foodModal} onClose={() => setFoodModal(null)} onAdded={(f) => setFoods((xs) => [...xs, f])} />}
       {exModal && (
         <ExercisePicker date={date} weightKg={weight} onClose={() => setExModal(false)} onAdded={(e) => setExercises((xs) => [...xs, e])} />
       )}
@@ -265,23 +300,64 @@ export default function Diary() {
   );
 }
 
-function Kpi({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: "good" | "bad" }) {
+function Stat({
+  icon,
+  label,
+  value,
+  note,
+  tone,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+  note?: string;
+  tone?: "accent" | "burn" | "good" | "bad";
+}) {
   return (
-    <div className="kpi">
-      <div className="kpi-l">{label}</div>
-      <div className={`kpi-v ${tone ?? ""}`}>{value}</div>
-      {note && <div className="kpi-n">{note}</div>}
+    <div className={`stat ${tone ?? ""}`}>
+      <span className="stat-icon">
+        <Icon name={icon} size={18} />
+      </span>
+      <div>
+        <div className="stat-label">{label}</div>
+        <div className="stat-value">{value}</div>
+        {note && <div className="stat-note">{note}</div>}
+      </div>
+    </div>
+  );
+}
+
+function MacroBar({ label, value, max, cls }: { label: string; value: number; max?: number; cls: string }) {
+  const pct = max ? Math.min(100, (value / max) * 100) : 100;
+  return (
+    <div className={`macro ${cls}`}>
+      <div className="macro-top">
+        <span>{label}</span>
+        <span className="num">
+          {fmt(value)}
+          {max ? ` / ${fmt(max)}` : ""} g
+        </span>
+      </div>
+      {max ? (
+        <div className="bar">
+          <div style={{ width: `${pct}%` }} />
+        </div>
+      ) : (
+        <div className="bar ghost" />
+      )}
     </div>
   );
 }
 
 function NumberField({
+  icon,
   label,
   hint,
   value,
   step = "1",
   onSave,
 }: {
+  icon?: IconName;
   label: string;
   hint?: string;
   value: number | null;
@@ -296,8 +372,10 @@ function NumberField({
   };
   return (
     <label>
-      {label}
-      {hint && <small className="muted"> ({hint})</small>}
+      <span className="label-icon">
+        {icon && <Icon name={icon} size={14} />} {label}
+        {hint && <small className="muted">{hint}</small>}
+      </span>
       <input
         type="number"
         inputMode="decimal"
@@ -311,6 +389,8 @@ function NumberField({
     </label>
   );
 }
+
+const cap = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1);
 
 const emptyDay = (log_date: string): DayLog => ({ log_date, steps: null, water_ml: null, sleep_hours: null, weight_kg: null, note: null });
 

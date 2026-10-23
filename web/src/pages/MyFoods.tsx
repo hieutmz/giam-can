@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import CustomFoodForm from "../components/CustomFoodForm";
 import FoodTable from "../components/FoodTable";
+import Icon from "../components/Icon";
 import Modal from "../components/Modal";
+import { useT } from "../i18n";
 import { addCustomFood, deleteCustomFood, listCustomFoods, updateCustomFood } from "../lib/api";
 import { searchFoods } from "../lib/foods";
 import type { CustomFood } from "../lib/types";
 
 export default function MyFoods() {
+  const t = useT();
   const [foods, setFoods] = useState<CustomFood[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [editing, setEditing] = useState<CustomFood | "new" | null>(null);
@@ -20,73 +23,80 @@ export default function MyFoods() {
       .catch((e) => setError(e.message))
       .finally(() => setLoaded(true));
   useEffect(() => {
-    reload();
+    void reload();
   }, []);
 
   async function remove(f: CustomFood) {
-    if (!confirm(`Xóa "${f.name}" khỏi Món của tôi?`)) return;
+    if (!confirm(t("my.confirmDelete", { name: f.name }))) return;
     await deleteCustomFood(f.id).catch((e) => setError(e.message));
-    reload();
+    void reload();
   }
 
   return (
-    <div className="stack-lg">
-      <div className="row-between">
+    <div className="page">
+      <header className="page-head with-action">
         <div>
-          <h1>Món của tôi</h1>
-          <p className="muted small">Món bạn tự khai báo kcal, protein, carb, fat — chỉ tài khoản của bạn thấy.</p>
+          <h1>{t("my.title")}</h1>
+          <p className="muted">{t("my.desc")}</p>
         </div>
-        <button className="primary sm" onClick={() => setEditing("new")}>
-          + Thêm món
+        <button className="btn primary" onClick={() => setEditing("new")}>
+          <Icon name="plus" size={18} /> {t("my.add")}
         </button>
-      </div>
+      </header>
 
-      {error && <p className="err">{error}</p>}
+      {error && <p className="alert err">{error}</p>}
 
       {!loaded ? (
-        <p className="muted">Đang tải…</p>
+        <p className="muted empty">{t("common.loading")}</p>
       ) : foods.length === 0 ? (
-        <div className="card stack">
-          <p>Chưa có món nào.</p>
-          <p className="muted small">
-            Lưu các món hay ăn (vd: bánh mì chả cá 450 kcal/ổ, cà phê sữa quán quen 180 kcal/ly) để lần sau ghi nhật ký chỉ cần chọn.
-          </p>
-          <button className="primary" onClick={() => setEditing("new")}>
-            + Thêm món đầu tiên
+        <section className="card empty-state">
+          <span className="empty-icon">
+            <Icon name="star" size={28} />
+          </span>
+          <h2>{t("my.empty")}</h2>
+          <p className="muted">{t("my.emptyHint")}</p>
+          <button className="btn primary" onClick={() => setEditing("new")}>
+            <Icon name="plus" size={18} /> {t("my.addFirst")}
           </button>
-        </div>
+        </section>
       ) : (
         <>
-          {foods.length > 8 && <input placeholder="Tìm trong món của tôi…" value={query} onChange={(e) => setQuery(e.target.value)} />}
-          <div className="card">
+          {foods.length > 8 && (
+            <div className="search">
+              <Icon name="search" size={18} />
+              <input placeholder={t("my.searchPh")} value={query} onChange={(e) => setQuery(e.target.value)} />
+            </div>
+          )}
+          <section className="card flush">
             <FoodTable
               rows={list}
               actions={(f) => (
                 <>
-                  <button className="icon-btn" aria-label={`Sửa ${f.name}`} onClick={() => setEditing(f as CustomFood)}>
-                    ✎
+                  <button className="icon-btn sm" aria-label={t("common.edit", { name: f.name })} onClick={() => setEditing(f as CustomFood)}>
+                    <Icon name="pencil" size={16} />
                   </button>
-                  <button className="icon-btn danger" aria-label={`Xóa ${f.name}`} onClick={() => remove(f as CustomFood)}>
-                    ✕
+                  <button className="icon-btn sm danger" aria-label={t("common.delete", { name: f.name })} onClick={() => remove(f as CustomFood)}>
+                    <Icon name="trash" size={16} />
                   </button>
                 </>
               )}
             />
-          </div>
+          </section>
+          <p className="hint">{t("my.count", { n: foods.length })}</p>
         </>
       )}
 
       {editing && (
-        <Modal title={editing === "new" ? "Thêm món của tôi" : "Sửa món"} onClose={() => setEditing(null)}>
+        <Modal title={editing === "new" ? t("my.addTitle") : t("my.editTitle")} onClose={() => setEditing(null)}>
           <CustomFoodForm
             initial={editing === "new" ? undefined : editing}
-            submitLabel={editing === "new" ? "Lưu món" : "Lưu thay đổi"}
+            submitLabel={editing === "new" ? t("my.saveNew") : t("my.saveEdit")}
             onCancel={() => setEditing(null)}
             onSubmit={async (input) => {
               if (editing === "new") await addCustomFood(input);
               else await updateCustomFood(editing.id, input);
               setEditing(null);
-              reload();
+              void reload();
             }}
           />
         </Modal>

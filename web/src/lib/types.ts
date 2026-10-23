@@ -1,12 +1,6 @@
 export type Meal = "sang" | "trua" | "xe" | "toi" | "phu";
 
-export const MEALS: { id: Meal; label: string }[] = [
-  { id: "sang", label: "Bữa sáng" },
-  { id: "trua", label: "Bữa trưa" },
-  { id: "xe", label: "Bữa xế" },
-  { id: "toi", label: "Bữa tối" },
-  { id: "phu", label: "Ăn vặt / đồ uống" },
-];
+export const MEALS: Meal[] = ["sang", "trua", "xe", "toi", "phu"];
 
 export type Profile = {
   id: string;
