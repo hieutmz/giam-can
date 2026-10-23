@@ -19,7 +19,7 @@ export default function Foods() {
 
   return (
     <div className="page">
-      <header className="page-head">
+      <header className="bg-foods page-head">
         <h1>{t("foods.title")}</h1>
         <p className="muted">
           {t("foods.desc", { n: fmt(FOODS.length) })} <Link to="/mon-cua-toi">{t("nav.myFoods")}</Link>.

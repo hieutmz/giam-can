@@ -93,7 +93,7 @@ export default function Diary() {
 
   return (
     <div className="page wide">
-      <header className="page-head with-action">
+      <header className="bg-diary page-head with-action">
         <div>
           <h1>{t("nav.diary")}</h1>
           <p className="muted">{isToday ? `${t("diary.today")} · ${fmtDate(date, "long")}` : cap(fmtDate(date, "long"))}</p>

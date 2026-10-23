@@ -73,7 +73,7 @@ export default function History() {
 
   return (
     <div className="page">
-      <header className="page-head">
+      <header className="bg-stats page-head">
         <h1>{t("st.title")}</h1>
         <p className="muted">
           {t("st.subtitle", {

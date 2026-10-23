@@ -53,7 +53,7 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
-      <header className="profile-head">
+      <header className="bg-profile profile-head">
         <div className="avatar xl">{name.charAt(0).toUpperCase()}</div>
         <div>
           <h1>{name}</h1>

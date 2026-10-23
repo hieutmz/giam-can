@@ -34,7 +34,7 @@ export default function MyFoods() {
 
   return (
     <div className="page">
-      <header className="page-head with-action">
+      <header className="bg-myfoods page-head with-action">
         <div>
           <h1>{t("my.title")}</h1>
           <p className="muted">{t("my.desc")}</p>

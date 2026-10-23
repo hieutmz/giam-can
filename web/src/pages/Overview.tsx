@@ -112,7 +112,7 @@ export default function Overview() {
 
   return (
     <div className="page wide">
-      <header className="page-head with-action">
+      <header className="bg-overview page-head with-action">
         <div>
           <h1>{t("nav.overview")}</h1>
           <p className="muted">{t("ov.desc")}</p>
