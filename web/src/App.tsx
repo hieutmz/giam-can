@@ -5,11 +5,13 @@ import Diary from "./pages/Diary";
 import Foods from "./pages/Foods";
 import History from "./pages/History";
 import Login from "./pages/Login";
+import MyFoods from "./pages/MyFoods";
 import ProfilePage from "./pages/Profile";
 
 const NAV = [
   { to: "/", label: "Nhật ký", icon: "📒" },
   { to: "/thong-ke", label: "Thống kê", icon: "📈" },
+  { to: "/mon-cua-toi", label: "Món của tôi", icon: "⭐" },
   { to: "/thuc-pham", label: "Thực phẩm", icon: "🥦" },
   { to: "/ho-so", label: "Hồ sơ", icon: "👤" },
 ];
@@ -55,6 +57,7 @@ export default function App() {
           <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Diary />} />
           <Route path="/ngay/:date" element={<Diary />} />
           <Route path="/thong-ke" element={<History />} />
+          <Route path="/mon-cua-toi" element={<MyFoods />} />
           <Route path="/thuc-pham" element={<Foods />} />
           <Route path="/ho-so" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
