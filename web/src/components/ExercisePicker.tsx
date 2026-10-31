@@ -1,31 +1,34 @@
 import { useState, type FormEvent } from "react";
 import { usePrefs } from "../i18n";
 import { activityLabel, exerciseLabel } from "../i18n/labels";
-import { addExercise } from "../lib/api";
+import { addExercise, updateExercise } from "../lib/api";
 import { exerciseKcal } from "../lib/calc";
 import { fmt } from "../lib/date";
 import { ACTIVITIES, ACTIVITY_GROUPS, activityById } from "../lib/exercises";
 import type { ExerciseLog } from "../lib/types";
 import Modal from "./Modal";
 
+/** Thêm bài tập, hoặc sửa bài đã ghi nếu có `initial`. */
 export default function ExercisePicker({
   date,
   weightKg,
-  onAdded,
+  initial,
+  onSaved,
   onClose,
 }: {
   date: string;
   weightKg: number;
-  onAdded: (e: ExerciseLog) => void;
+  initial?: ExerciseLog;
+  onSaved: (e: ExerciseLog) => void;
   onClose: () => void;
 }) {
   const prefs = usePrefs();
   const { t, tx } = prefs;
-  const [activity, setActivity] = useState("gym");
-  const [minutes, setMinutes] = useState("30");
-  const [level, setLevel] = useState("vua");
-  const [speed, setSpeed] = useState("4.5");
-  const [incline, setIncline] = useState("12");
+  const [activity, setActivity] = useState(initial && activityById(initial.activity) ? initial.activity : "gym");
+  const [minutes, setMinutes] = useState(initial ? String(Number(initial.minutes)) : "30");
+  const [level, setLevel] = useState(initial?.level ?? "vua");
+  const [speed, setSpeed] = useState(String(initial?.speed_kmh ?? 4.5));
+  const [incline, setIncline] = useState(String(initial?.incline_pct ?? 12));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -45,14 +48,13 @@ export default function ExercisePicker({
     setBusy(true);
     setErr("");
     try {
-      onAdded(
-        await addExercise({
-          log_date: date,
-          name: exerciseLabel(prefs, { ...input, name: a.name }),
-          ...input,
-          kcal: Math.round(kcal * 10) / 10,
-        }),
-      );
+      const row = {
+        log_date: date,
+        name: exerciseLabel(prefs, { ...input, name: a.name }),
+        ...input,
+        kcal: Math.round(kcal * 10) / 10,
+      };
+      onSaved(initial ? await updateExercise(initial.id, row) : await addExercise(row));
       onClose();
     } catch (e) {
       setErr((e as Error).message);
@@ -61,7 +63,7 @@ export default function ExercisePicker({
   }
 
   return (
-    <Modal title={t("ex.title")} onClose={onClose}>
+    <Modal title={t(initial ? "ex.editTitle" : "ex.title")} onClose={onClose}>
       <form className="stack" onSubmit={submit}>
         <label>
           {t("ex.activity")}
@@ -124,7 +126,7 @@ export default function ExercisePicker({
         <p className="hint">{isWalk ? t("ex.walkHint") : t("ex.metHint")}</p>
         {err && <p className="alert err">{err}</p>}
         <button className="btn primary block" disabled={busy || kcal <= 0}>
-          {t("ex.add")}
+          {t(initial ? "common.save" : "ex.add")}
         </button>
       </form>
     </Modal>

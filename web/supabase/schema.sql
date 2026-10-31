@@ -13,6 +13,8 @@ create table if not exists public.profiles (
   activity_factor numeric(3, 2) not null default 1.20,
   kcal_target int not null default 1800,
   protein_target int not null default 130,
+  carb_target int not null default 186,
+  fat_target int not null default 55,
   deficit_goal int not null default 77000,
   start_date date not null default current_date,
   created_at timestamptz not null default now(),
@@ -28,6 +30,7 @@ create table if not exists public.day_logs (
   sleep_hours numeric(4, 2),
   weight_kg numeric(5, 1),
   note text,
+  deficit_override int,                   -- thâm hụt người dùng tự chốt; khác null thì bộ đếm dùng số này thay cho công thức
   updated_at timestamptz not null default now(),
   primary key (user_id, log_date)
 );
@@ -76,17 +79,26 @@ create table if not exists public.custom_foods (
   protein numeric(6, 1) not null default 0,
   carb numeric(6, 1) not null default 0,
   fat numeric(6, 1) not null default 0,
+  recipe jsonb,                           -- món ghép: nguyên liệu và cách chia khẩu phần
   created_at timestamptz not null default now()
+);
+
+-- Món yêu thích (thực phẩm hệ thống hoặc món của tôi)
+create table if not exists public.favorite_foods (
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  food_ref text not null,                 -- id trong DB tĩnh (p1-0001) hoặc 'custom:<uuid>'
+  created_at timestamptz not null default now(),
+  primary key (user_id, food_ref)
 );
 
 -- Quyền truy cập qua Data API: chỉ user đã đăng nhập (role authenticated).
 -- Cần khi tắt "Automatically expose new tables" lúc tạo project; bật thì vẫn chạy bình thường.
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on
-  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods
   to authenticated;
 revoke all on
-  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods
   from anon;
 
 -- Row Level Security
@@ -95,6 +107,7 @@ alter table public.day_logs enable row level security;
 alter table public.food_logs enable row level security;
 alter table public.exercise_logs enable row level security;
 alter table public.custom_foods enable row level security;
+alter table public.favorite_foods enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -114,6 +127,10 @@ create policy "own exercise_logs" on public.exercise_logs
 
 drop policy if exists "own custom_foods" on public.custom_foods;
 create policy "own custom_foods" on public.custom_foods
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "own favorite_foods" on public.favorite_foods;
+create policy "own favorite_foods" on public.favorite_foods
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- Tự tạo hồ sơ khi có user mới đăng ký

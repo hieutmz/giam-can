@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { usePrefs } from "../i18n";
 import { groupLabel } from "../i18n/labels";
-import { addCustomFood, addFood, listCustomFoods } from "../lib/api";
-import { amountNutrition } from "../lib/calc";
+import { addCustomFood, addFood, listCustomFoods, listFavorites, listRecentFoods, setFavorite } from "../lib/api";
+import { amountNutrition, roundNutrients } from "../lib/calc";
 import { fmt } from "../lib/date";
-import { FOODS, searchFoods, unitLabel } from "../lib/foods";
+import { FOODS, loggedAmount, searchFoods, servingLabel, uniqueRecent, unitLabel, type RecentLog } from "../lib/foods";
 import { MEALS, type CustomFood, type FoodLog, type Meal } from "../lib/types";
 import CustomFoodForm from "./CustomFoodForm";
 import Icon from "./Icon";
@@ -20,6 +20,8 @@ type Item = {
   fat: number;
   basis?: "100g" | "serving";
   serving_name?: string | null;
+  /** Lấy từ một lần ghi cũ, không còn món gốc trong danh sách (nhập nhanh, món đã xóa) */
+  snapshot?: boolean;
 };
 type Tab = "search" | "quick" | "create";
 type Macros = { kcal: number; protein: number; carb: number; fat: number };
@@ -40,6 +42,8 @@ export default function FoodPicker({
   const [tab, setTab] = useState<Tab>("search");
   const [meal, setMeal] = useState<Meal>(initialMeal);
   const [custom, setCustom] = useState<CustomFood[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [recentLogs, setRecentLogs] = useState<RecentLog[]>([]);
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<Item | null>(null);
   const [amount, setAmount] = useState("100");
@@ -50,18 +54,58 @@ export default function FoodPicker({
     listCustomFoods()
       .then(setCustom)
       .catch(() => setCustom([]));
+    listFavorites()
+      .then(setFavorites)
+      .catch(() => setFavorites([]));
+    listRecentFoods()
+      .then((logs) => setRecentLogs(uniqueRecent(logs)))
+      .catch(() => setRecentLogs([]));
   }, []);
 
   const mine = useMemo(() => searchFoods(custom, query, 50), [custom, query]);
   const system = useMemo(() => searchFoods(FOODS, query, 40), [query]);
+  const catalog = useMemo(() => new Map<string, Item>([...FOODS, ...custom].map((f) => [f.id, f])), [custom]);
+  const favoriteItems = useMemo(() => favorites.flatMap((id) => catalog.get(id) ?? []), [favorites, catalog]);
+  const recent = useMemo(
+    () =>
+      recentLogs.map((log) => {
+        const food = log.food_ref ? catalog.get(log.food_ref) : undefined;
+        if (food) return { log, item: food, amount: loggedAmount(log, food) };
+        const item: Item = {
+          id: `log:${log.food_ref ?? log.name}`,
+          name: log.name,
+          kcal: Number(log.kcal),
+          protein: Number(log.protein),
+          carb: Number(log.carb),
+          fat: Number(log.fat),
+          basis: "serving",
+          snapshot: true,
+        };
+        return { log, item, amount: 1 };
+      }),
+    [recentLogs, catalog],
+  );
+  const browsing = !query.trim();
   const isServing = picked?.basis === "serving";
   const a = Number(amount) || 0;
   const p = picked ? amountNutrition(picked, a) : null;
   const unitName = picked?.serving_name || servingWord;
 
-  function pick(f: Item) {
+  function pick(f: Item, lastAmount?: number) {
     setPicked(f);
-    setAmount(f.basis === "serving" ? "1" : "100");
+    setAmount(String(lastAmount ?? (f.basis === "serving" ? 1 : 100)));
+  }
+
+  async function toggleFavorite(f: Item) {
+    const on = !favorites.includes(f.id);
+    const before = favorites;
+    setFavorites(on ? [f.id, ...before] : before.filter((id) => id !== f.id));
+    try {
+      await setFavorite(f.id, on);
+    } catch (e) {
+      setFavorites(before);
+      setErr((e as Error).message);
+    }
   }
 
   async function save(row: Omit<FoodLog, "id">) {
@@ -82,10 +126,10 @@ export default function FoodPicker({
     void save({
       log_date: date,
       meal,
-      food_ref: picked.id,
-      name: isServing ? `${picked.name} (${fmt(a, 2)} ${unitName})` : picked.name,
+      food_ref: picked.snapshot ? null : picked.id,
+      name: !isServing || (picked.snapshot && a === 1) ? picked.name : servingLabel(picked.name, a, unitName),
       grams: isServing ? null : a,
-      ...round(p),
+      ...roundNutrients(p),
     });
   }
 
@@ -124,7 +168,44 @@ export default function FoodPicker({
             <Icon name="search" size={18} />
             <input autoFocus placeholder={t("fp.searchPh")} value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
+          {err && <p className="alert err">{err}</p>}
           <div className="pick-scroll">
+            {browsing && favoriteItems.length > 0 && (
+              <>
+                <div className="pick-head">
+                  <span>
+                    <Icon name="star" size={14} /> {t("fp.favorites")}
+                  </span>
+                </div>
+                <ul className="pick-list">
+                  {favoriteItems.map((f) => (
+                    <PickRow key={f.id} f={f} onPick={pick} fav onFav={toggleFavorite} />
+                  ))}
+                </ul>
+              </>
+            )}
+            {browsing && recent.length > 0 && (
+              <>
+                <div className="pick-head">
+                  <span>
+                    <Icon name="calendar" size={14} /> {t("fp.recent")}
+                  </span>
+                  <span>{t("fp.lastTime")}</span>
+                </div>
+                <ul className="pick-list">
+                  {recent.map(({ log, item, amount: last }) => (
+                    <PickRow
+                      key={item.id}
+                      f={item}
+                      onPick={(f) => pick(f, last)}
+                      fav={favorites.includes(item.id)}
+                      onFav={item.snapshot ? undefined : toggleFavorite}
+                      last={{ kcal: Number(log.kcal), amount: item.basis === "serving" ? `${fmt(last, 2)} ${item.serving_name || servingWord}` : `${fmt(last)} g` }}
+                    />
+                  ))}
+                </ul>
+              </>
+            )}
             <div className="pick-head">
               <span>
                 <Icon name="star" size={14} /> {t("fp.mine")}
@@ -135,7 +216,7 @@ export default function FoodPicker({
             </div>
             <ul className="pick-list">
               {mine.map((f) => (
-                <PickRow key={f.id} f={f} onPick={pick} mine />
+                <PickRow key={f.id} f={f} onPick={pick} mine fav={favorites.includes(f.id)} onFav={toggleFavorite} />
               ))}
               {mine.length === 0 && (
                 <li className="pick-empty">{custom.length === 0 ? t("fp.noMine") : t("fp.noMineMatch", { q: query })}</li>
@@ -150,7 +231,7 @@ export default function FoodPicker({
             </div>
             <ul className="pick-list">
               {system.map((f) => (
-                <PickRow key={f.id} f={f} onPick={pick} />
+                <PickRow key={f.id} f={f} onPick={pick} fav={favorites.includes(f.id)} onFav={toggleFavorite} />
               ))}
               {system.length === 0 && (
                 <li className="pick-empty stack">
@@ -246,20 +327,46 @@ export default function FoodPicker({
   );
 }
 
-function PickRow({ f, onPick, mine }: { f: Item; onPick: (f: Item) => void; mine?: boolean }) {
+function PickRow({
+  f,
+  onPick,
+  mine,
+  fav,
+  onFav,
+  last,
+}: {
+  f: Item;
+  onPick: (f: Item) => void;
+  mine?: boolean;
+  fav?: boolean;
+  onFav?: (f: Item) => void;
+  /** Lần ghi gần nhất: hiện đúng lượng đã ăn thay cho giá trị trên 1 đơn vị */
+  last?: { kcal: number; amount: string };
+}) {
   const prefs = usePrefs();
   return (
-    <li>
-      <button type="button" onClick={() => onPick(f)}>
+    <li className="pick-row">
+      <button type="button" className="pick-main" onClick={() => onPick(f)}>
         <span className="pick-name">
           {f.name}
           {!mine && f.group && <small>{groupLabel(prefs, f.group)}</small>}
         </span>
         <span className="pick-kcal">
-          <b>{fmt(f.kcal)}</b> kcal
-          <small>/{unitLabel(f, prefs.t("unit.serving"))}</small>
+          <b>{fmt(last?.kcal ?? f.kcal)}</b> kcal
+          <small>/{last?.amount ?? unitLabel(f, prefs.t("unit.serving"))}</small>
         </span>
       </button>
+      {onFav && (
+        <button
+          type="button"
+          className={fav ? "fav-btn on" : "fav-btn"}
+          aria-pressed={Boolean(fav)}
+          aria-label={prefs.t(fav ? "fp.favRemove" : "fp.favAdd", { name: f.name })}
+          onClick={() => onFav(f)}
+        >
+          <Icon name="star" size={16} />
+        </button>
+      )}
     </li>
   );
 }
@@ -355,9 +462,3 @@ function QuickAdd({
   );
 }
 
-const round = (p: Macros) => ({
-  kcal: Math.round(p.kcal * 10) / 10,
-  protein: Math.round(p.protein * 10) / 10,
-  carb: Math.round(p.carb * 10) / 10,
-  fat: Math.round(p.fat * 10) / 10,
-});

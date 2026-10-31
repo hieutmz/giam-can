@@ -6,14 +6,14 @@ import Icon, { type IconName } from "../components/Icon";
 import { usePrefs } from "../i18n";
 import type { Key } from "../i18n/vi";
 import { getRange } from "../lib/api";
-import { effectiveBmr, summarizeDay, type DaySummary } from "../lib/calc";
+import { dayDeficit, effectiveBmr, summarizeDay, type DaySummary } from "../lib/calc";
 import { addDays, daysBetween, fmt, fmtDate, today } from "../lib/date";
 import { MEALS, type Meal, type Profile } from "../lib/types";
 
 type RangeKey = "7" | "14" | "30" | "all" | "custom";
 const RANGES: RangeKey[] = ["7", "14", "30", "all", "custom"];
 type RangeData = Awaited<ReturnType<typeof getRange>>;
-type Day = { date: string; s: DaySummary | null; steps: number | null };
+type Day = { date: string; s: DaySummary | null; deficit: number | null; steps: number | null };
 
 /** Tóm tắt từng ngày trong [from, to]; ngày chưa nhập món ăn có s = null. */
 function summarize(data: RangeData, profile: Profile, from: string, to: string): Day[] {
@@ -34,18 +34,20 @@ function summarize(data: RangeData, profile: Profile, from: string, to: string):
             steps: day?.steps ?? null,
           })
         : null;
-    out.push({ date: d, s, steps: day?.steps ?? null });
+    const override = day?.deficit_override ?? null;
+    out.push({ date: d, s, deficit: s ? dayDeficit(s, override) : override, steps: day?.steps ?? null });
   }
   return out;
 }
 
 function metrics(days: Day[]) {
   const logged = days.filter((d) => d.s) as (Day & { s: DaySummary })[];
+  const counted = days.filter((d) => d.deficit != null);
   const stepDays = days.filter((d) => d.steps != null);
   const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
   return {
     count: logged.length,
-    deficit: logged.length ? logged.reduce((a, d) => a + d.s.deficit, 0) : null,
+    deficit: counted.length ? counted.reduce((a, d) => a + (d.deficit ?? 0), 0) : null,
     intake: avg(logged.map((d) => d.s.intake)),
     protein: avg(logged.map((d) => d.s.protein)),
     steps: avg(stepDays.map((d) => Number(d.steps))),

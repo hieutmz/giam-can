@@ -36,6 +36,7 @@ export default function FoodTable({
                 <span className="cell-title">{f.name}</span>
                 <small className="muted">
                   {showGroup && f.group ? `${groupLabel(p, f.group)} · ` : ""}
+                  {"recipe" in f && f.recipe ? `${t("my.recipeTag")} · ` : ""}
                   {t("unit.per", { unit: unitLabel(f, t("unit.serving")) })}
                 </small>
               </td>

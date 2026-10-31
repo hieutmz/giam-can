@@ -13,6 +13,8 @@ export type Profile = {
   activity_factor: number;
   kcal_target: number;
   protein_target: number;
+  carb_target: number;
+  fat_target: number;
   deficit_goal: number;
   start_date: string;
 };
@@ -24,6 +26,8 @@ export type DayLog = {
   sleep_hours: number | null;
   weight_kg: number | null;
   note: string | null;
+  /** Thâm hụt tự chốt cho ngày này; khác null thì thay cho số tính theo công thức */
+  deficit_override: number | null;
 };
 
 export type FoodLog = {
@@ -64,4 +68,23 @@ export type Food = {
   serving_name?: string | null;
 };
 
-export type CustomFood = Omit<Food, "group"> & { group?: string };
+/** Một nguyên liệu của món ghép; kcal và macro tính cho đúng lượng `amount`. */
+export type RecipeItem = {
+  food_ref: string | null;
+  name: string;
+  amount: number;
+  unit: string;
+  kcal: number;
+  protein: number;
+  carb: number;
+  fat: number;
+};
+
+/** Chia theo khối lượng chín nếu có `cooked_g`, nếu không thì theo số phần. */
+export type Recipe = {
+  servings: number | null;
+  cooked_g: number | null;
+  items: RecipeItem[];
+};
+
+export type CustomFood = Omit<Food, "group"> & { group?: string; recipe?: Recipe | null };

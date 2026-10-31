@@ -118,7 +118,10 @@ export function summarizeDay(args: {
   };
 }
 
-type Nutrients = { kcal: number; protein: number; carb: number; fat: number };
+/** Thâm hụt của ngày: số tự chốt nếu có, nếu không thì theo công thức. */
+export const dayDeficit = (s: Pick<DaySummary, "deficit">, override: number | null | undefined) => override ?? s.deficit;
+
+export type Nutrients = { kcal: number; protein: number; carb: number; fat: number };
 
 /** Nhân giá trị dinh dưỡng với một hệ số. */
 export function scale(per: Nutrients, factor: number): Nutrients {
@@ -132,6 +135,36 @@ export function scale(per: Nutrients, factor: number): Nutrients {
 
 /** Dinh dưỡng của một khẩu phần từ giá trị trên 100 g. */
 export const portion = (per100: Nutrients, grams: number) => scale(per100, grams / 100);
+
+/** Làm tròn 1 chữ số thập phân, đúng độ chính xác của cột trong DB. */
+export const roundNutrients = (p: Nutrients): Nutrients => ({
+  kcal: Math.round(p.kcal * 10) / 10,
+  protein: Math.round(p.protein * 10) / 10,
+  carb: Math.round(p.carb * 10) / 10,
+  fat: Math.round(p.fat * 10) / 10,
+});
+
+export function sumNutrients(items: Nutrients[]): Nutrients {
+  return items.reduce(
+    (a, x) => ({
+      kcal: a.kcal + Number(x.kcal),
+      protein: a.protein + Number(x.protein),
+      carb: a.carb + Number(x.carb),
+      fat: a.fat + Number(x.fat),
+    }),
+    { kcal: 0, protein: 0, carb: 0, fat: 0 },
+  );
+}
+
+/**
+ * Giá trị dinh dưỡng của món ghép theo đơn vị lưu trong "Món của tôi":
+ * trên 100 g nếu biết khối lượng chín, nếu không thì trên 1 phần.
+ */
+export function recipeUnit(items: Nutrients[], split: { servings: number | null; cooked_g: number | null }) {
+  const total = sumNutrients(items);
+  if (split.cooked_g && split.cooked_g > 0) return { basis: "100g" as const, ...scale(total, 100 / split.cooked_g) };
+  return { basis: "serving" as const, ...scale(total, 1 / (split.servings || 1)) };
+}
 
 /**
  * Dinh dưỡng theo lượng nhập: món tính trên 100 g thì amount là số gram,

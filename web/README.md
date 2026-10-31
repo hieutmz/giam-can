@@ -9,7 +9,7 @@ Nhật ký ăn uống và luyện tập, tự tính calo nạp / tiêu hao / th�
 ## 1. Tạo Supabase project (1 lần)
 
 1. Vào [supabase.com](https://supabase.com) → **New project** (gói Free). Chọn region **Southeast Asia (Singapore)**.
-2. Vào **SQL Editor** → **New query** → dán toàn bộ [supabase/schema.sql](supabase/schema.sql) → **Run**.
+2. Vào **SQL Editor** → **New query** → dán toàn bộ [supabase/schema.sql](supabase/schema.sql) → **Run**. Project đã chạy `schema.sql` từ trước thì chỉ cần chạy các file mới trong [supabase/migrations/](supabase/migrations/).
 3. Vào **Project Settings → API**, copy **Project URL** và **anon public key**.
 4. Vào **Authentication → URL Configuration**:
    - **Site URL:** địa chỉ web sau khi deploy (vd `https://giam-can.pages.dev`); khi chạy local dùng `http://localhost:5173`
@@ -32,6 +32,7 @@ Lệnh khác:
 |---|---|
 | `npm test` | Test các công thức tính calo |
 | `npm run check-foods` | Kiểm tra DB thực phẩm (id/tên trùng, kcal lệch so với 4P+4C+9F) |
+| `npm run import-du-lieu` | Sinh SQL đưa nhật ký `du_lieu/*.json` vào Supabase (xem mục bên dưới) |
 | `npm run build` | Build ra `dist/` |
 
 ## 3. Deploy lên Cloudflare Pages
@@ -57,9 +58,22 @@ Từ đó mỗi lần `git push` lên `master`, Cloudflare tự build và deploy
 | Máy chạy / đi bộ / chạy | Phương trình ACSM. Đi bộ (< 8 km/h): `VO2 = 0,1·S + 1,8·S·G`; chạy: `VO2 = 0,2·S + 0,9·S·G` (S m/phút, G độ dốc); `kcal = VO2 × kg × phút × 5 / 1000` |
 | Gym, cardio, thể thao | `(MET − 1) × kg × giờ`, MET theo Compendium of Physical Activities |
 | Tổng tiêu hao | Nền + bước chân + các buổi tập |
-| Thâm hụt | Tổng tiêu hao − calo nạp; cộng dồn vào mục tiêu (mặc định 77.000 kcal ≈ 10 kg mỡ) |
+| Thâm hụt | Tổng tiêu hao − calo nạp, hoặc số **ấn định** trong Nhật ký nếu có; cộng dồn vào mục tiêu (mặc định 77.000 kcal ≈ 10 kg mỡ) |
 
 Phần tập luyện và bước chân đều đã **trừ năng lượng lúc nghỉ** (vì đã nằm trong BMR) để không tính trùng. Bước chân nên nhập **không gồm** phần đi trên máy chạy bộ.
+
+## Đưa nhật ký `du_lieu/` lên web
+
+```bash
+npm run import-du-lieu                        # tất cả các ngày, giữ nguyên món đã nhập trên web
+npm run import-du-lieu -- --from 2026-10-20   # chỉ từ ngày này (có thêm --to)
+npm run import-du-lieu -- --replace           # xóa dữ liệu web của các ngày đó rồi ghi lại từ JSON
+```
+
+Lệnh này sinh `supabase/seed_import_du_lieu.sql` (không commit vì chứa dữ liệu sức khỏe); dán file đó vào SQL Editor rồi **Run**. Chạy lại nhiều lần vẫn an toàn.
+
+- `tham_hut_ghi_nhan` được ghi thành số ấn định của ngày, nên bộ đếm trên web khớp với `index.html`.
+- JSON chỉ có kcal theo khoảng, nên mỗi món lấy mức giữa và không có protein/carb/fat.
 
 ## Dữ liệu thực phẩm
 

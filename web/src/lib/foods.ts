@@ -1,4 +1,5 @@
-import type { Food } from "./types";
+import { fmt } from "./date";
+import type { Food, FoodLog } from "./types";
 
 // Gộp tất cả file src/data/foods/*.json lúc build
 const parts = import.meta.glob<{ default: Food[] }>("../data/foods/*.json", { eager: true });
@@ -12,6 +13,31 @@ export const FOOD_GROUPS: string[] = [...new Set(FOODS.map((f) => f.group))];
 /** Đơn vị mà giá trị dinh dưỡng của món đang tính theo, vd "100 g" hoặc "1 ổ". */
 export const unitLabel = (f: Pick<Food, "basis" | "serving_name">, servingWord = "phần") =>
   f.basis === "serving" ? `1 ${f.serving_name || servingWord}` : "100 g";
+
+/** Tên món ghi vào nhật ký khi tính theo phần, vd "Bánh mì (1,5 ổ)". */
+export const servingLabel = (name: string, amount: number, unit: string) => `${name} (${fmt(amount, 2)} ${unit})`;
+
+export type RecentLog = Pick<FoodLog, "food_ref" | "name" | "grams" | "kcal" | "protein" | "carb" | "fat">;
+
+/** Lượng đã ghi: số gram, hoặc số phần suy ra từ kcal (DB không lưu số phần). */
+export function loggedAmount(log: Pick<FoodLog, "grams" | "kcal">, food: Pick<Food, "kcal" | "basis">) {
+  if (food.basis !== "serving") return Number(log.grams) || 100;
+  return Number(food.kcal) > 0 ? Math.round((Number(log.kcal) / Number(food.kcal)) * 100) / 100 : 1;
+}
+
+/** Bỏ lần ghi trùng món, giữ lần mới nhất. `logs` phải xếp mới nhất trước. */
+export function uniqueRecent<T extends Pick<FoodLog, "food_ref" | "name">>(logs: T[], limit = 12): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const l of logs) {
+    const key = l.food_ref ?? normalize(l.name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(l);
+    if (out.length === limit) break;
+  }
+  return out;
+}
 
 /** Bỏ dấu tiếng Việt + chữ thường để tìm kiếm không cần gõ dấu. */
 export function normalize(s: string) {

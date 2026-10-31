@@ -4,10 +4,10 @@ import { useAuth } from "../auth/AuthProvider";
 import Icon, { type IconName } from "../components/Icon";
 import { usePrefs } from "../i18n";
 import { getRange } from "../lib/api";
-import { effectiveBmr, summarizeDay, type DaySummary } from "../lib/calc";
+import { dayDeficit, effectiveBmr, summarizeDay, type DaySummary } from "../lib/calc";
 import { addDays, daysBetween, fmt, fmtDate, parseISODate, today } from "../lib/date";
 
-type Row = { date: string; s: DaySummary; logged: boolean; weight: number | null; cumulative: number };
+type Row = { date: string; s: DaySummary; logged: boolean; hasFood: boolean; fixed: boolean; deficit: number; weight: number | null; cumulative: number };
 
 export default function History() {
   const { profile } = useAuth();
@@ -34,7 +34,8 @@ export default function History() {
       const foods = data.foods.filter((f) => f.log_date === d);
       const exercises = data.exercises.filter((e) => e.log_date === d);
       const day = data.days.find((x) => x.log_date === d);
-      const logged = foods.length > 0;
+      const fixed = day?.deficit_override != null;
+      const logged = foods.length > 0 || fixed;
       if (!logged && !day && !exercises.length) continue;
       const s = summarizeDay({
         bmr,
@@ -45,9 +46,10 @@ export default function History() {
         exercises,
         steps: day?.steps ?? null,
       });
-      // Chỉ cộng vào bộ đếm những ngày đã nhập món ăn
-      if (logged) cum += s.deficit;
-      out.push({ date: d, s, logged, weight: day?.weight_kg ?? null, cumulative: cum });
+      // Chỉ cộng vào bộ đếm những ngày đã nhập món ăn hoặc đã tự chốt số thâm hụt
+      const deficit = dayDeficit(s, day?.deficit_override);
+      if (logged) cum += deficit;
+      out.push({ date: d, s, logged, hasFood: foods.length > 0, fixed, deficit, weight: day?.weight_kg ?? null, cumulative: cum });
     }
     return out;
   }, [data, profile, start, end]);
@@ -68,7 +70,7 @@ export default function History() {
     eta = fmtDate(d, "full");
   }
   const chartRows = logged.slice(-30);
-  const maxAbs = Math.max(1, ...chartRows.map((r) => Math.abs(r.s.deficit)));
+  const maxAbs = Math.max(1, ...chartRows.map((r) => Math.abs(r.deficit)));
   const weights = rows.filter((r) => r.weight != null) as (Row & { weight: number })[];
 
   return (
@@ -115,12 +117,12 @@ export default function History() {
           </div>
           <div className="chart">
             {chartRows.map((r) => {
-              const neg = r.s.deficit < 0;
+              const neg = r.deficit < 0;
               return (
-                <Link key={r.date} to={`/ngay/${r.date}`} className="col" title={`${fmtDate(r.date, "full")}: ${fmt(r.s.deficit)} kcal`}>
+                <Link key={r.date} to={`/ngay/${r.date}`} className="col" title={`${fmtDate(r.date, "full")}: ${fmt(r.deficit)} kcal`}>
                   <div className="bar-area">
-                    <div className={neg ? "b neg" : "b"} style={{ height: `${Math.max(3, (Math.abs(r.s.deficit) / maxAbs) * 100)}%` }}>
-                      <span className="t">{fmt(r.s.deficit)}</span>
+                    <div className={neg ? "b neg" : "b"} style={{ height: `${Math.max(3, (Math.abs(r.deficit) / maxAbs) * 100)}%` }}>
+                      <span className="t">{fmt(r.deficit)}</span>
                     </div>
                   </div>
                   <span className="x">{fmtDate(r.date, "short")}</span>
@@ -177,12 +179,13 @@ export default function History() {
                       </Link>
                       <small className="muted">{fmtDate(r.date, "weekday")}</small>
                     </td>
-                    <td className="num">{r.logged ? fmt(r.s.intake) : <span className="muted">{t("st.notLogged")}</span>}</td>
+                    <td className="num">{r.hasFood ? fmt(r.s.intake) : <span className="muted">{t("st.notLogged")}</span>}</td>
                     <td className="num hide-sm">{fmt(r.s.tdee)}</td>
                     <td className="num">
-                      {r.logged ? <span className={`delta ${r.s.deficit >= 0 ? "good" : "bad"}`}>{fmt(r.s.deficit)}</span> : "—"}
+                      {r.logged ? <span className={`delta ${r.deficit >= 0 ? "good" : "bad"}`}>{fmt(r.deficit)}</span> : "—"}
+                      {r.fixed && <small className="muted">{t("st.fixed")}</small>}
                     </td>
-                    <td className="num hide-md">{r.logged ? `${fmt(r.s.protein)} g` : "—"}</td>
+                    <td className="num hide-md">{r.hasFood ? `${fmt(r.s.protein)} g` : "—"}</td>
                     <td className="num strong">{fmt(r.cumulative)}</td>
                   </tr>
                 ))}

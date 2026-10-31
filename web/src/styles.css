@@ -370,6 +370,8 @@ button:disabled { opacity: 0.45; cursor: default; }
 .bar.lg > div { background: var(--accent); }
 .bar.ghost { background: repeating-linear-gradient(90deg, var(--track) 0 6px, transparent 6px 10px); }
 .macro.p .bar > div { background: var(--p); }
+.macro.c .bar > div { background: var(--c); }
+.macro.f .bar > div { background: var(--f); }
 .macro.p .macro-top span:first-child { color: var(--p); }
 .macro.c .macro-top span:first-child { color: var(--c); }
 .macro.f .macro-top span:first-child { color: var(--f); }
@@ -412,10 +414,23 @@ button:disabled { opacity: 0.45; cursor: default; }
 .pick-head { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1; padding: 8px 2px 4px; background: var(--surface); }
 .pick-head > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
 .pick-head .link, .pick-head > span:last-child { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 12.5px; }
-.pick-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.pick-list { flex: none; list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
 .pick-list li + li { border-top: 1px solid var(--line); }
-.pick-list button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; text-align: left; transition: background-color 0.1s; }
-.pick-list button:hover { background: var(--accent-soft); }
+.pick-row { display: flex; align-items: stretch; }
+.pick-list .pick-main { flex: 1; min-width: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; text-align: left; transition: background-color 0.1s; }
+.pick-list .pick-main:hover { background: var(--accent-soft); }
+.fav-btn { flex: none; width: 40px; display: grid; place-items: center; color: var(--muted); }
+.fav-btn:hover { background: var(--accent-soft); color: var(--accent); }
+.fav-btn.on { color: var(--accent); }
+.fav-btn.on .icon { fill: currentColor; }
+.formula + label { margin-top: 12px; }
+.copy-list { display: flex; flex-direction: column; gap: 12px; }
+.copy-list small { display: block; margin-top: 2px; font-size: 12px; }
+.recipe-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.recipe-rows li { display: grid; grid-template-columns: minmax(0, 1fr) 76px 34px 44px 30px; align-items: center; gap: 8px; }
+.recipe-name { font-size: 14px; overflow-wrap: anywhere; }
+.recipe-unit { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recipe-rows .num { text-align: right; }
 .pick-name { display: flex; flex-direction: column; min-width: 0; }
 .pick-name small { font-size: 12px; color: var(--muted); }
 .pick-kcal { white-space: nowrap; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }

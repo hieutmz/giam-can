@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acsmKcal, amountNutrition, bmrMifflin, exerciseKcal, metKcal, portion, stepsKcal, summarizeDay } from "./calc";
+import { acsmKcal, amountNutrition, bmrMifflin, dayDeficit, exerciseKcal, metKcal, portion, recipeUnit, roundNutrients, stepsKcal, summarizeDay } from "./calc";
 
 describe("calc", () => {
   it("BMR Mifflin cho nam 27 tuổi, 166 cm, 89 kg", () => {
@@ -45,5 +45,47 @@ describe("calc", () => {
     });
     expect(Math.round(s.tdee)).toBe(Math.round(1624 * 1.2 + 92.2 + 178));
     expect(s.deficit).toBeCloseTo(s.tdee - 1800);
+  });
+});
+
+describe("dayDeficit", () => {
+  it("dùng số ấn định, kể cả số 0 và số âm", () => {
+    expect(dayDeficit({ deficit: 500 }, 0)).toBe(0);
+    expect(dayDeficit({ deficit: 500 }, -275)).toBe(-275);
+  });
+
+  it("không ấn định thì theo công thức", () => {
+    expect(dayDeficit({ deficit: 500 }, null)).toBe(500);
+    expect(dayDeficit({ deficit: 500 }, undefined)).toBe(500);
+  });
+});
+
+describe("recipeUnit", () => {
+  const items = [
+    { kcal: 650, protein: 13, carb: 140, fat: 1 },
+    { kcal: 350, protein: 40, carb: 0, fat: 20 },
+  ];
+
+  it("chia theo số phần", () => {
+    const u = recipeUnit(items, { servings: 4, cooked_g: null });
+    expect(u.basis).toBe("serving");
+    expect(u.kcal).toBe(250);
+    expect(u.protein).toBeCloseTo(13.25);
+  });
+
+  it("có khối lượng chín thì tính trên 100 g và bỏ qua số phần", () => {
+    const u = recipeUnit(items, { servings: 4, cooked_g: 2000 });
+    expect(u.basis).toBe("100g");
+    expect(u.kcal).toBe(50);
+  });
+
+  it("thiếu số phần thì coi là 1 phần", () => {
+    expect(recipeUnit(items, { servings: null, cooked_g: null }).kcal).toBe(1000);
+  });
+});
+
+describe("roundNutrients", () => {
+  it("làm tròn 1 chữ số thập phân", () => {
+    expect(roundNutrients({ kcal: 123.456, protein: 1.25, carb: 0.04, fat: 9.96 })).toEqual({ kcal: 123.5, protein: 1.3, carb: 0, fat: 10 });
   });
 });

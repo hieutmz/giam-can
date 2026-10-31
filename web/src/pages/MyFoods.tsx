@@ -3,6 +3,7 @@ import CustomFoodForm from "../components/CustomFoodForm";
 import FoodTable from "../components/FoodTable";
 import Icon from "../components/Icon";
 import Modal from "../components/Modal";
+import RecipeForm from "../components/RecipeForm";
 import { useT } from "../i18n";
 import { addCustomFood, deleteCustomFood, listCustomFoods, updateCustomFood } from "../lib/api";
 import { searchFoods } from "../lib/foods";
@@ -13,6 +14,7 @@ export default function MyFoods() {
   const [foods, setFoods] = useState<CustomFood[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [editing, setEditing] = useState<CustomFood | "new" | null>(null);
+  const [recipe, setRecipe] = useState<CustomFood | "new" | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const list = useMemo(() => searchFoods(foods, query, 1000), [foods, query]);
@@ -39,9 +41,14 @@ export default function MyFoods() {
           <h1>{t("my.title")}</h1>
           <p className="muted">{t("my.desc")}</p>
         </div>
-        <button className="btn primary" onClick={() => setEditing("new")}>
-          <Icon name="plus" size={18} /> {t("my.add")}
-        </button>
+        <div className="toolbar">
+          <button className="btn secondary" onClick={() => setRecipe("new")}>
+            <Icon name="utensils" size={18} /> {t("my.addRecipe")}
+          </button>
+          <button className="btn primary" onClick={() => setEditing("new")}>
+            <Icon name="plus" size={18} /> {t("my.add")}
+          </button>
+        </div>
       </header>
 
       {error && <p className="alert err">{error}</p>}
@@ -72,7 +79,11 @@ export default function MyFoods() {
               rows={list}
               actions={(f) => (
                 <>
-                  <button className="icon-btn sm" aria-label={t("common.edit", { name: f.name })} onClick={() => setEditing(f as CustomFood)}>
+                  <button
+                    className="icon-btn sm"
+                    aria-label={t("common.edit", { name: f.name })}
+                    onClick={() => ("recipe" in f && f.recipe ? setRecipe(f) : setEditing(f as CustomFood))}
+                  >
                     <Icon name="pencil" size={16} />
                   </button>
                   <button className="icon-btn sm danger" aria-label={t("common.delete", { name: f.name })} onClick={() => remove(f as CustomFood)}>
@@ -96,6 +107,22 @@ export default function MyFoods() {
               if (editing === "new") await addCustomFood(input);
               else await updateCustomFood(editing.id, input);
               setEditing(null);
+              void reload();
+            }}
+          />
+        </Modal>
+      )}
+
+      {recipe && (
+        <Modal title={t(recipe === "new" ? "rc.addTitle" : "rc.editTitle")} onClose={() => setRecipe(null)}>
+          <RecipeForm
+            initial={recipe === "new" ? undefined : recipe}
+            submitLabel={recipe === "new" ? t("my.saveNew") : t("my.saveEdit")}
+            onCancel={() => setRecipe(null)}
+            onSubmit={async (input) => {
+              if (recipe === "new") await addCustomFood(input);
+              else await updateCustomFood(recipe.id, input);
+              setRecipe(null);
               void reload();
             }}
           />

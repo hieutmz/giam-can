@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../auth/AuthProvider";
+import DataExport from "../components/DataExport";
 import Icon from "../components/Icon";
 import { PrefsControls } from "../components/PrefsMenu";
 import { useT } from "../i18n";
@@ -141,6 +142,17 @@ export default function ProfilePage() {
           </div>
           <div className="row2">
             <label>
+              {t("pf.carbTarget")}
+              <input type="number" min="0" max="800" value={p.carb_target ?? ""} onChange={(e) => set("carb_target", Number(e.target.value))} required />
+            </label>
+            <label>
+              {t("pf.fatTarget")}
+              <input type="number" min="0" max="300" value={p.fat_target ?? ""} onChange={(e) => set("fat_target", Number(e.target.value))} required />
+            </label>
+          </div>
+          <p className="hint">{t("pf.macroSum", { n: fmt(p.protein_target * 4 + (p.carb_target ?? 0) * 4 + (p.fat_target ?? 0) * 9) })}</p>
+          <div className="row2">
+            <label>
               {t("pf.deficitGoal")}
               <input type="number" min="0" step="100" value={p.deficit_goal} onChange={(e) => set("deficit_goal", Number(e.target.value))} required />
               <small className="muted">{t("pf.deficitHint", { kg: fmt(p.deficit_goal / 7700, 1) })}</small>
@@ -163,6 +175,7 @@ export default function ProfilePage() {
             </h2>
             <PrefsControls />
           </section>
+          <DataExport />
           <ChangePassword />
           <button className="btn secondary block" onClick={signOut}>
             <Icon name="logout" size={18} /> {t("common.signOut")}
