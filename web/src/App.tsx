@@ -5,6 +5,7 @@ import PrefsMenu from "./components/PrefsMenu";
 import { useT } from "./i18n";
 import type { Key } from "./i18n/vi";
 import { supabaseConfigured } from "./lib/supabase";
+import Body from "./pages/Body";
 import Diary from "./pages/Diary";
 import Foods from "./pages/Foods";
 import History from "./pages/History";
@@ -19,6 +20,7 @@ const NAV: NavItem[] = [
   { to: "/", label: "nav.overview", icon: "trend" },
   { to: "/nhat-ky", label: "nav.diary", icon: "diary" },
   { to: "/thong-ke", label: "nav.stats", icon: "stats" },
+  { to: "/co-the", label: "nav.body", icon: "scale", hideMobile: true },
   { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
   { to: "/thuc-pham", label: "nav.foods", icon: "apple", hideMobile: true },
   { to: "/ho-so", label: "nav.profile", icon: "user" },
@@ -71,6 +73,7 @@ export default function App() {
           <Route path="/nhat-ky" element={<Diary />} />
           <Route path="/ngay/:date" element={<Diary />} />
           <Route path="/thong-ke" element={<History />} />
+          <Route path="/co-the" element={<Body />} />
           <Route path="/mon-cua-toi" element={<MyFoods />} />
           <Route path="/thuc-pham" element={<Foods />} />
           <Route path="/ho-so" element={<ProfilePage />} />

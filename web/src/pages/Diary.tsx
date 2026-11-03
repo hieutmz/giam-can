@@ -265,6 +265,7 @@ export default function Diary() {
               />
               <span className="num muted">{day?.steps ? `−${fmt(stepsKcal(day.steps, weight, height))} kcal` : ""}</span>
             </div>
+            <GoalLine value={day?.steps ?? null} target={profile.steps_target} unit={t("wk.stepsUnit")} />
             {s && (
               <p className="formula">
                 {t("diary.formula", {
@@ -296,6 +297,7 @@ export default function Diary() {
             <div className="stack">
               <div>
                 <NumberField icon="droplet" label={t("diary.water")} value={day?.water_ml ?? null} onSave={(v) => updateDay({ water_ml: v })} />
+                <GoalLine value={day?.water_ml ?? null} target={profile.water_target_ml} unit="ml" />
                 <div className="chips">
                   {[250, 500].map((n) => (
                     <button key={n} className="chip" onClick={() => updateDay({ water_ml: (day?.water_ml ?? 0) + n })}>
@@ -305,7 +307,10 @@ export default function Diary() {
                 </div>
               </div>
               <div className="row2">
-                <NumberField icon="bed" label={t("diary.sleep")} step="0.25" value={day?.sleep_hours ?? null} onSave={(v) => updateDay({ sleep_hours: v })} />
+                <div>
+                  <NumberField icon="bed" label={t("diary.sleep")} step="0.25" value={day?.sleep_hours ?? null} onSave={(v) => updateDay({ sleep_hours: v })} />
+                  <GoalLine value={day?.sleep_hours ?? null} target={profile.sleep_target} unit={t("wk.hours")} digits={2} />
+                </div>
                 <NumberField icon="scale" label={t("diary.weight")} step="0.1" value={day?.weight_kg ?? null} onSave={(v) => updateDay({ weight_kg: v })} />
               </div>
               <label>
@@ -391,6 +396,23 @@ function MacroBar({ label, value, max, cls }: { label: string; value: number; ma
       ) : (
         <div className="bar ghost" />
       )}
+    </div>
+  );
+}
+
+/** Tiến độ so với mục tiêu ngày; chưa có mục tiêu thì không hiện. */
+function GoalLine({ value, target, unit, digits = 0 }: { value: number | null; target?: number | null; unit: string; digits?: number }) {
+  const goal = Number(target);
+  if (!goal) return null;
+  const current = Number(value ?? 0);
+  return (
+    <div className={current >= goal ? "goal done" : "goal"}>
+      <div className="bar">
+        <div style={{ width: `${Math.min(100, (current / goal) * 100)}%` }} />
+      </div>
+      <small className="num">
+        {fmt(current, digits)} / {fmt(goal, digits)} {unit}
+      </small>
     </div>
   );
 }

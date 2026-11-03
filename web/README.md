@@ -60,6 +60,9 @@ Từ đó mỗi lần `git push` lên `master`, Cloudflare tự build và deploy
 | Tổng tiêu hao | Nền + bước chân + các buổi tập |
 | Thâm hụt | Tổng tiêu hao − calo nạp, hoặc số **ấn định** trong Nhật ký nếu có; cộng dồn vào mục tiêu (mặc định 77.000 kcal ≈ 10 kg mỡ) |
 
+| Xu hướng cân | Trung bình trượt hàm mũ khoảng 10 ngày, tính theo số ngày thật giữa 2 lần cân |
+| TDEE thực tế | `kcal nạp TB − độ dốc cân (kg/ngày) × 7.700`, trong 28 ngày gần nhất; cần 8 lần cân, 10 ngày ghi đủ món và cách nhau 14 ngày. Chỉ để tham khảo, không ảnh hưởng bộ đếm |
+
 Phần tập luyện và bước chân đều đã **trừ năng lượng lúc nghỉ** (vì đã nằm trong BMR) để không tính trùng. Bước chân nên nhập **không gồm** phần đi trên máy chạy bộ.
 
 ## Đưa nhật ký `du_lieu/` lên web

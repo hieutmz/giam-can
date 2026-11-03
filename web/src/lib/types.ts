@@ -15,6 +15,9 @@ export type Profile = {
   protein_target: number;
   carb_target: number;
   fat_target: number;
+  water_target_ml: number;
+  sleep_target: number;
+  steps_target: number;
   deficit_goal: number;
   start_date: string;
 };
@@ -53,6 +56,18 @@ export type ExerciseLog = {
   speed_kmh: number | null;
   incline_pct: number | null;
   kcal: number;
+};
+
+export type BodyMeasurement = {
+  id: string;
+  measured_on: string;
+  weight_kg: number | null;
+  pbf: number | null;
+  bfm_kg: number | null;
+  smm_kg: number | null;
+  waist_cm: number | null;
+  visceral_fat: number | null;
+  note: string | null;
 };
 
 export type Food = {

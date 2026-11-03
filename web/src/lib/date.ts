@@ -44,3 +44,6 @@ export const fmt = (n: number | null | undefined, digits = 0) =>
   n == null || Number.isNaN(n)
     ? "—"
     : n.toLocaleString(LOCALE, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+
+/** Số kèm dấu, vd "+0,5" hoặc "-1,2". */
+export const fmtSigned = (n: number | null | undefined, digits = 1) => (n == null ? "—" : `${n > 0 ? "+" : ""}${fmt(n, digits)}`);

@@ -1,13 +1,31 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
-import Icon, { type IconName } from "../components/Icon";
+import { Legend, MetricChart } from "../components/charts";
+import Icon from "../components/Icon";
+import Tile from "../components/Tile";
+import WeekReview from "../components/WeekReview";
 import { usePrefs } from "../i18n";
 import { getRange } from "../lib/api";
 import { dayDeficit, effectiveBmr, summarizeDay, type DaySummary } from "../lib/calc";
-import { addDays, daysBetween, fmt, fmtDate, parseISODate, today } from "../lib/date";
+import { addDays, daysBetween, fmt, fmtDate, fmtSigned, parseISODate, today } from "../lib/date";
+import { activityById } from "../lib/exercises";
+import { ADAPTIVE, adaptiveTdee, weightTrend, type AdaptiveTdee, type DayFacts } from "../lib/progress";
 
-type Row = { date: string; s: DaySummary; logged: boolean; hasFood: boolean; fixed: boolean; deficit: number; weight: number | null; cumulative: number };
+type Row = {
+  date: string;
+  s: DaySummary;
+  logged: boolean;
+  hasFood: boolean;
+  fixed: boolean;
+  deficit: number;
+  weight: number | null;
+  cumulative: number;
+  gym: boolean;
+  steps: number | null;
+  water: number | null;
+  sleep: number | null;
+};
 
 export default function History() {
   const { profile } = useAuth();
@@ -49,10 +67,49 @@ export default function History() {
       // Chỉ cộng vào bộ đếm những ngày đã nhập món ăn hoặc đã tự chốt số thâm hụt
       const deficit = dayDeficit(s, day?.deficit_override);
       if (logged) cum += deficit;
-      out.push({ date: d, s, logged, hasFood: foods.length > 0, fixed, deficit, weight: day?.weight_kg ?? null, cumulative: cum });
+      out.push({
+        date: d,
+        s,
+        logged,
+        hasFood: foods.length > 0,
+        fixed,
+        deficit,
+        weight: day?.weight_kg ?? null,
+        cumulative: cum,
+        gym: exercises.some((e) => activityById(e.activity)?.group === "gym"),
+        steps: day?.steps ?? null,
+        water: day?.water_ml ?? null,
+        sleep: day?.sleep_hours == null ? null : Number(day.sleep_hours),
+      });
     }
     return out;
   }, [data, profile, start, end]);
+
+  const trend = useMemo(() => weightTrend(rows.flatMap((r) => (r.weight == null ? [] : [{ date: r.date, kg: Number(r.weight) }]))), [rows]);
+  const facts: DayFacts[] = useMemo(
+    () =>
+      rows.map((r) => ({
+        date: r.date,
+        hasFood: r.hasFood,
+        intake: r.s.intake,
+        protein: r.s.protein,
+        deficit: r.logged ? r.deficit : null,
+        gym: r.gym,
+        steps: r.steps,
+        water: r.water,
+        sleep: r.sleep,
+      })),
+    [rows],
+  );
+  const targets = useMemo(
+    () => ({
+      protein: profile?.protein_target ?? 0,
+      steps: profile?.steps_target,
+      water: profile?.water_target_ml,
+      sleep: profile?.sleep_target == null ? null : Number(profile.sleep_target),
+    }),
+    [profile],
+  );
 
   if (!profile) return null;
   if (error) return <p className="alert err">{error}</p>;
@@ -71,7 +128,11 @@ export default function History() {
   }
   const chartRows = logged.slice(-30);
   const maxAbs = Math.max(1, ...chartRows.map((r) => Math.abs(r.deficit)));
-  const weights = rows.filter((r) => r.weight != null) as (Row & { weight: number })[];
+  const adaptive = adaptiveTdee(
+    trend,
+    rows.filter((r) => r.hasFood).map((r) => ({ date: r.date, intake: r.s.intake, formulaTdee: r.s.tdee })),
+    effectiveBmr(profile) ?? 0,
+  );
 
   return (
     <div className="page">
@@ -93,6 +154,8 @@ export default function History() {
         <Tile icon="trend" label={t("st.avg")} value={fmt(avg)} note={t("st.daysLogged", { n: logged.length })} />
         <Tile icon="calendar" label={t("st.eta")} value={eta} note={t("st.etaNote")} />
       </section>
+
+      <WeekReview days={facts} trend={trend} start={start} targets={targets} />
 
       <section className="card">
         <div className="card-head">
@@ -134,22 +197,34 @@ export default function History() {
         </section>
       )}
 
-      {weights.length > 0 && (
-        <section className="card">
-          <div className="card-head">
-            <h2>
-              <Icon name="scale" size={18} /> {t("st.weight")}
-            </h2>
-            <span className="muted small">
-              {weights.length > 1 &&
-                t("st.weightChange", {
-                  d: `${weights.at(-1)!.weight - weights[0].weight > 0 ? "+" : ""}${fmt(weights.at(-1)!.weight - weights[0].weight, 1)}`,
-                })}
-            </span>
-          </div>
-          <WeightChart points={weights.map((w) => ({ date: w.date, kg: Number(w.weight) }))} />
-        </section>
-      )}
+      <section className="card">
+        <div className="card-head">
+          <h2>
+            <Icon name="scale" size={18} /> {t("st.weight")}
+          </h2>
+          <Link to="/co-the" className="link small">
+            {t("st.bodyLink")}
+          </Link>
+        </div>
+        {trend.length > 0 ? (
+          <>
+            <div className="row-between small muted">
+              <span>{t("st.trendNow", { kg: fmt(trend.at(-1)!.trend, 1) })}</span>
+              {trend.length > 1 && <span>{t("st.weightChange", { d: fmtSigned(trend.at(-1)!.trend - trend[0].trend) })}</span>}
+            </div>
+            <Legend
+              items={[
+                { label: t("st.trendLine"), color: "var(--accent)" },
+                { label: t("st.rawPoints"), color: "var(--muted)" },
+              ]}
+            />
+            <MetricChart points={trend.map((p) => ({ date: p.date, value: p.kg, trend: p.trend }))} unit="kg" label={t("st.weight")} />
+          </>
+        ) : (
+          <p className="muted small">{t("st.noWeight")}</p>
+        )}
+        <AdaptiveBox result={adaptive} />
+      </section>
 
       <section className="card">
         <div className="card-head">
@@ -198,76 +273,44 @@ export default function History() {
   );
 }
 
-function Tile({ icon, label, value, note, tone }: { icon: IconName; label: string; value: string; note: string; tone?: "good" }) {
+/** TDEE suy từ cân nặng và kcal nạp thực tế, so với TDEE theo công thức. */
+function AdaptiveBox({ result: r }: { result: AdaptiveTdee }) {
+  const { t } = usePrefs();
+  if (!r.ready) {
+    const parts = [
+      r.needWeighIns ? t("ad.needWeigh", { n: r.needWeighIns }) : null,
+      r.needIntakeDays ? t("ad.needDays", { n: r.needIntakeDays }) : null,
+      r.needSpanDays ? t("ad.needSpan", { n: r.needSpanDays }) : null,
+    ].filter(Boolean);
+    return (
+      <div className="adaptive">
+        <b>{t("ad.title")}</b>
+        <p className="muted small">{t("ad.need", { items: parts.join(", ") })}</p>
+      </div>
+    );
+  }
+  const gap = r.formulaTdee - r.tdee;
   return (
-    <div className={`tile ${tone ?? ""}`}>
-      <span className="tile-icon">
-        <Icon name={icon} size={18} />
-      </span>
-      <div className="tile-label">{label}</div>
-      <div className="tile-value">{value}</div>
-      <div className="tile-note">{note}</div>
-    </div>
-  );
-}
-
-/** Biểu đồ đường cân nặng (SVG co giãn theo chiều ngang). */
-function WeightChart({ points }: { points: { date: string; kg: number }[] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [W, setW] = useState(600);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.round(e.contentRect.width))));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  const H = 200;
-  const pad = { l: 36, r: 28, t: 14, b: 26 };
-  const kgs = points.map((p) => p.kg);
-  const min = Math.floor(Math.min(...kgs) - 0.5);
-  const max = Math.ceil(Math.max(...kgs) + 0.5);
-  const x = (i: number) => pad.l + (points.length === 1 ? (W - pad.l - pad.r) / 2 : (i / (points.length - 1)) * (W - pad.l - pad.r));
-  const y = (kg: number) => pad.t + ((max - kg) / (max - min || 1)) * (H - pad.t - pad.b);
-  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.kg).toFixed(1)}`).join(" ");
-  const area = `${line} L${x(points.length - 1).toFixed(1)},${H - pad.b} L${x(0).toFixed(1)},${H - pad.b} Z`;
-  const ticks = [min, (min + max) / 2, max];
-  const labelEvery = Math.ceil(points.length / Math.max(2, Math.floor(W / 90)));
-
-  return (
-    <div ref={ref}>
-      <svg className="line-chart" width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label="weight chart">
-        <defs>
-          <linearGradient id="wfill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {ticks.map((tk) => (
-          <g key={tk}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(tk)} y2={y(tk)} className="grid" />
-            <text x={pad.l - 6} y={y(tk) + 4} textAnchor="end" className="axis">
-              {fmt(tk, 1)}
-            </text>
-          </g>
-        ))}
-        <path d={area} fill="url(#wfill)" />
-        <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-        {points.map((p, i) => (
-          <g key={p.date}>
-            <circle cx={x(i)} cy={y(p.kg)} r="4" fill="var(--surface)" stroke="var(--accent)" strokeWidth="2">
-              <title>
-                {fmtDate(p.date, "full")}: {fmt(p.kg, 1)} kg
-              </title>
-            </circle>
-            {i % labelEvery === 0 && (
-              <text x={x(i)} y={H - 6} textAnchor="middle" className="axis">
-                {fmtDate(p.date, "short")}
-              </text>
-            )}
-          </g>
-        ))}
-      </svg>
+    <div className="adaptive">
+      <b>{t("ad.title")}</b>
+      <div className="adaptive-values">
+        <div>
+          <span className="muted small">{t("ad.real")}</span>
+          <b className="big">{fmt(r.tdee)}</b>
+        </div>
+        <div>
+          <span className="muted small">{t("ad.formula")}</span>
+          <b className="big muted">{fmt(r.formulaTdee)}</b>
+        </div>
+        <div>
+          <span className="muted small">{t("ad.realDeficit")}</span>
+          <b className="big">{fmt(r.realDeficit)}</b>
+        </div>
+      </div>
+      <p className="muted small">
+        {t(gap >= 0 ? "ad.formulaHigh" : "ad.formulaLow", { n: fmt(Math.abs(gap)) })}{" "}
+        {t("ad.basis", { kg: fmtSigned(r.kgPerWeek, 2), w: r.weighIns, d: r.intakeDays, n: ADAPTIVE.windowDays })}
+      </p>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { fmt, fmtDate } from "../lib/date";
+import { daysBetween, fmt, fmtDate } from "../lib/date";
 
 /** Đo chiều rộng thật của phần tử để SVG vẽ đúng kích thước (chữ không bị phóng to/thu nhỏ). */
 export function useWidth<T extends HTMLElement>(initial = 600) {
@@ -165,6 +165,56 @@ export function Donut({ parts, size = 148, stroke = 18, children }: { parts: { l
           })}
       </svg>
       <div className="ring-center">{children}</div>
+    </div>
+  );
+}
+
+export type MetricPoint = { date: string; value: number; trend?: number };
+
+/** Biểu đồ một chỉ số theo thời gian, trục ngang theo đúng khoảng cách ngày; có `trend` thì vẽ thêm đường xu hướng. */
+export function MetricChart({ points, unit, digits = 1, label }: { points: MetricPoint[]; unit: string; digits?: number; label: string }) {
+  const { ref, width: W } = useWidth<HTMLDivElement>();
+  const H = 200;
+  const pad = { l: 40, r: 28, t: 14, b: 26 };
+  const hasTrend = points.some((p) => p.trend != null);
+  const all = points.flatMap((p) => (p.trend != null ? [p.value, p.trend] : [p.value]));
+  const min = Math.floor(Math.min(...all) - 0.5);
+  const max = Math.ceil(Math.max(...all) + 0.5);
+  const span = points.length > 1 ? daysBetween(points[0].date, points[points.length - 1].date) : 0;
+  const x = (p: MetricPoint) => pad.l + (span ? (daysBetween(points[0].date, p.date) / span) * (W - pad.l - pad.r) : (W - pad.l - pad.r) / 2);
+  const y = (v: number) => pad.t + ((max - v) / (max - min || 1)) * (H - pad.t - pad.b);
+  const path = (pick: (p: MetricPoint) => number) => points.map((p, i) => `${i ? "L" : "M"}${x(p).toFixed(1)},${y(pick(p)).toFixed(1)}`).join(" ");
+  const ticks = [min, (min + max) / 2, max];
+  const labelEvery = Math.ceil(points.length / Math.max(2, Math.floor(W / 90)));
+
+  return (
+    <div ref={ref}>
+      <svg className="line-chart" width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
+        {ticks.map((tk) => (
+          <g key={tk}>
+            <line x1={pad.l} x2={W - pad.r} y1={y(tk)} y2={y(tk)} className="grid" />
+            <text x={pad.l - 6} y={y(tk) + 4} textAnchor="end" className="axis">
+              {fmt(tk, 1)}
+            </text>
+          </g>
+        ))}
+        <path d={path((p) => p.trend ?? p.value)} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          <g key={p.date}>
+            <circle cx={x(p)} cy={y(p.value)} r={hasTrend ? 3 : 4} fill="var(--surface)" stroke={hasTrend ? "var(--muted)" : "var(--accent)"} strokeWidth={hasTrend ? 1.5 : 2}>
+              <title>
+                {fmtDate(p.date, "full")}: {fmt(p.value, digits)} {unit}
+                {p.trend != null ? ` · ${fmt(p.trend, digits)} ${unit}` : ""}
+              </title>
+            </circle>
+            {i % labelEvery === 0 && (
+              <text x={x(p)} y={H - 6} textAnchor="middle" className="axis">
+                {fmtDate(p.date, "short")}
+              </text>
+            )}
+          </g>
+        ))}
+      </svg>
     </div>
   );
 }

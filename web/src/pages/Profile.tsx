@@ -151,6 +151,20 @@ export default function ProfilePage() {
             </label>
           </div>
           <p className="hint">{t("pf.macroSum", { n: fmt(p.protein_target * 4 + (p.carb_target ?? 0) * 4 + (p.fat_target ?? 0) * 9) })}</p>
+          <div className="row3">
+            <label>
+              {t("pf.waterTarget")}
+              <input type="number" min="0" max="10000" step="50" value={p.water_target_ml ?? ""} onChange={(e) => set("water_target_ml", Number(e.target.value))} required />
+            </label>
+            <label>
+              {t("pf.sleepTarget")}
+              <input type="number" min="0" max="14" step="0.5" value={p.sleep_target ?? ""} onChange={(e) => set("sleep_target", Number(e.target.value))} required />
+            </label>
+            <label>
+              {t("pf.stepsTarget")}
+              <input type="number" min="0" max="100000" step="500" value={p.steps_target ?? ""} onChange={(e) => set("steps_target", Number(e.target.value))} required />
+            </label>
+          </div>
           <div className="row2">
             <label>
               {t("pf.deficitGoal")}

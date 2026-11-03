@@ -74,6 +74,13 @@ export function exercisesCsv({ exercises }: ExportData) {
   );
 }
 
+export function bodyCsv({ body }: ExportData) {
+  return toCsv(
+    ["date", "weight_kg", "pbf", "bfm_kg", "smm_kg", "waist_cm", "visceral_fat", "note"],
+    body.map((b) => [b.measured_on, b.weight_kg, b.pbf, b.bfm_kg, b.smm_kg, b.waist_cm, b.visceral_fat, b.note]),
+  );
+}
+
 export function downloadFile(filename: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement("a");

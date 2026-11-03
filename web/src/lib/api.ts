@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import type { RecentLog } from "./foods";
-import type { CustomFood, DayLog, ExerciseLog, FoodLog, Profile } from "./types";
+import type { BodyMeasurement, CustomFood, DayLog, ExerciseLog, FoodLog, Profile } from "./types";
 
 function check<T>(res: { data: T; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
@@ -96,8 +96,8 @@ export async function getRange(from: string, to: string) {
         .order("id")
         .range(a, b),
     ),
-    fetchAll<Pick<ExerciseLog, "log_date" | "kcal">>((a, b) =>
-      supabase.from("exercise_logs").select("log_date,kcal").gte("log_date", from).lte("log_date", to).order("log_date").order("id").range(a, b),
+    fetchAll<Pick<ExerciseLog, "log_date" | "activity" | "kcal">>((a, b) =>
+      supabase.from("exercise_logs").select("log_date,activity,kcal").gte("log_date", from).lte("log_date", to).order("log_date").order("id").range(a, b),
     ),
   ]);
   return { days: check(days) as DayLog[], foods, exercises };
@@ -105,18 +105,33 @@ export async function getRange(from: string, to: string) {
 
 /** Toàn bộ dữ liệu của user đang đăng nhập, để xuất file. */
 export async function exportAll(userId: string) {
-  const [profile, days, foods, exercises, custom_foods, favorites] = await Promise.all([
+  const [profile, days, foods, exercises, custom_foods, favorites, body] = await Promise.all([
     getProfile(userId),
     fetchAll<DayLog>((a, b) => supabase.from("day_logs").select("*").order("log_date").range(a, b)),
     fetchAll<FoodLog>((a, b) => supabase.from("food_logs").select("*").order("log_date").order("id").range(a, b)),
     fetchAll<ExerciseLog>((a, b) => supabase.from("exercise_logs").select("*").order("log_date").order("id").range(a, b)),
     fetchAll<CustomFood>((a, b) => supabase.from("custom_foods").select("*").order("id").range(a, b)),
     listFavorites(),
+    listMeasurements(),
   ]);
-  return { profile, days, foods, exercises, custom_foods, favorites };
+  return { profile, days, foods, exercises, custom_foods, favorites, body };
 }
 
 export type ExportData = Awaited<ReturnType<typeof exportAll>>;
+
+/** Xếp tăng dần theo ngày đo. */
+export async function listMeasurements() {
+  return check(await supabase.from("body_measurements").select("*").order("measured_on")) as BodyMeasurement[];
+}
+
+export async function saveMeasurement(id: string | null, m: Omit<BodyMeasurement, "id">) {
+  if (id) check(await supabase.from("body_measurements").update(m).eq("id", id));
+  else check(await supabase.from("body_measurements").insert(m));
+}
+
+export async function deleteMeasurement(id: string) {
+  check(await supabase.from("body_measurements").delete().eq("id", id));
+}
 
 export async function listFavorites() {
   const rows = check(await supabase.from("favorite_foods").select("food_ref").order("created_at", { ascending: false })) as { food_ref: string }[];
