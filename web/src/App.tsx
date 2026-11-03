@@ -13,15 +13,17 @@ import Login from "./pages/Login";
 import MyFoods from "./pages/MyFoods";
 import Overview from "./pages/Overview";
 import ProfilePage from "./pages/Profile";
+import Strength from "./pages/Strength";
 
 type NavItem = { to: string; label: Key; icon: IconName; hideMobile?: boolean };
 
 const NAV: NavItem[] = [
   { to: "/", label: "nav.overview", icon: "trend" },
   { to: "/nhat-ky", label: "nav.diary", icon: "diary" },
+  { to: "/tap-luyen", label: "nav.strength", icon: "dumbbell" },
   { to: "/thong-ke", label: "nav.stats", icon: "stats" },
   { to: "/co-the", label: "nav.body", icon: "scale", hideMobile: true },
-  { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star" },
+  { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star", hideMobile: true },
   { to: "/thuc-pham", label: "nav.foods", icon: "apple", hideMobile: true },
   { to: "/ho-so", label: "nav.profile", icon: "user" },
 ];
@@ -72,6 +74,7 @@ export default function App() {
           <Route path="/" element={needsProfile ? <Navigate to="/ho-so" replace /> : <Overview />} />
           <Route path="/nhat-ky" element={<Diary />} />
           <Route path="/ngay/:date" element={<Diary />} />
+          <Route path="/tap-luyen" element={<Strength />} />
           <Route path="/thong-ke" element={<History />} />
           <Route path="/co-the" element={<Body />} />
           <Route path="/mon-cua-toi" element={<MyFoods />} />

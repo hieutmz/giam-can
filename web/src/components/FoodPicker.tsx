@@ -6,6 +6,7 @@ import { amountNutrition, roundNutrients } from "../lib/calc";
 import { fmt } from "../lib/date";
 import { FOODS, loggedAmount, searchFoods, servingLabel, uniqueRecent, unitLabel, type RecentLog } from "../lib/foods";
 import { MEALS, type CustomFood, type FoodLog, type Meal } from "../lib/types";
+import AiFoodLog from "./AiFoodLog";
 import CustomFoodForm from "./CustomFoodForm";
 import Icon from "./Icon";
 import Modal from "./Modal";
@@ -23,7 +24,7 @@ type Item = {
   /** Lấy từ một lần ghi cũ, không còn món gốc trong danh sách (nhập nhanh, món đã xóa) */
   snapshot?: boolean;
 };
-type Tab = "search" | "quick" | "create";
+type Tab = "search" | "ai" | "quick" | "create";
 type Macros = { kcal: number; protein: number; carb: number; fat: number };
 
 export default function FoodPicker({
@@ -153,6 +154,9 @@ export default function FoodPicker({
       <div className="seg">
         <button type="button" className={tab === "search" ? "active" : ""} onClick={() => setTab("search")}>
           {t("fp.tabSearch")}
+        </button>
+        <button type="button" className={tab === "ai" ? "active" : ""} onClick={() => setTab("ai")}>
+          <Icon name="sparkles" size={14} /> {t("fp.tabAi")}
         </button>
         <button type="button" className={tab === "quick" ? "active" : ""} onClick={() => setTab("quick")}>
           {t("fp.tabQuick")}
@@ -284,6 +288,18 @@ export default function FoodPicker({
             {t("fp.add")}
           </button>
         </form>
+      )}
+
+      {tab === "ai" && (
+        <AiFoodLog
+          date={date}
+          meal={meal}
+          myFoods={custom}
+          onSaved={(rows) => {
+            rows.forEach(onAdded);
+            onClose();
+          }}
+        />
       )}
 
       {tab === "quick" && (

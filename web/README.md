@@ -4,7 +4,8 @@ Nhật ký ăn uống và luyện tập, tự tính calo nạp / tiêu hao / th�
 
 - **Frontend:** React 18 + Vite + TypeScript, build ra web tĩnh
 - **Backend:** Supabase (đăng nhập email, Postgres, Row Level Security → mỗi user chỉ thấy dữ liệu của mình)
-- **Hosting:** Cloudflare Pages (miễn phí, tự deploy khi `git push`)
+- **Hosting:** Vercel (đang dùng) hoặc Cloudflare Pages, tự deploy khi `git push`
+- **AI:** Vercel Function `api/estimate-food.ts` gọi Claude (`claude-opus-5-5`) để ước tính kcal từ câu mô tả bữa ăn
 
 ## 1. Tạo Supabase project (1 lần)
 
@@ -33,9 +34,25 @@ Lệnh khác:
 | `npm test` | Test các công thức tính calo |
 | `npm run check-foods` | Kiểm tra DB thực phẩm (id/tên trùng, kcal lệch so với 4P+4C+9F) |
 | `npm run import-du-lieu` | Sinh SQL đưa nhật ký `du_lieu/*.json` vào Supabase (xem mục bên dưới) |
-| `npm run build` | Build ra `dist/` |
+| `npm run build` | Typecheck app + `api/`, build ra `dist/` |
 
-## 3. Deploy lên Cloudflare Pages
+`npm run dev` cũng chạy luôn các function trong `api/`. Muốn thử ghi món bằng AI ở local, thêm `ANTHROPIC_API_KEY=...` vào `.env.local` (không có tiền tố `VITE_` nên không lộ ra trình duyệt).
+
+## 3. Deploy lên Vercel
+
+Project đã nối repo trên Vercel: push lên production branch là tự deploy. Cấu hình: Root Directory **`web`**, preset **Vite**, output **`dist`**. `vercel.json` rewrite mọi đường dẫn (trừ `/api/*`) về `index.html` và cho function chạy tối đa 60 giây.
+
+**Environment variables** (Settings → Environment Variables):
+
+| Biến | Bắt buộc | Ghi chú |
+|---|---|---|
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | có | Dùng cho cả frontend lẫn function (function dùng để kiểm tra token đăng nhập) |
+| `ANTHROPIC_API_KEY` | để bật AI | Lấy ở [console.anthropic.com](https://console.anthropic.com) → API Keys. Thiếu thì tab "Mô tả (AI)" báo chưa cấu hình |
+| `AI_ALLOWED_EMAILS` | nên đặt | Email được dùng AI, cách nhau bằng dấu phẩy. Bỏ trống thì mọi tài khoản đăng ký được đều gọi được (tốn phí API của bạn) |
+
+Đổi biến môi trường xong phải **Redeploy** thì mới có hiệu lực.
+
+## 3b. Deploy lên Cloudflare Pages (cách cũ, không có AI)
 
 1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → chọn repo `giam-can`.
 2. Cấu hình build:
@@ -59,9 +76,12 @@ Từ đó mỗi lần `git push` lên `master`, Cloudflare tự build và deploy
 | Gym, cardio, thể thao | `(MET − 1) × kg × giờ`, MET theo Compendium of Physical Activities |
 | Tổng tiêu hao | Nền + bước chân + các buổi tập |
 | Thâm hụt | Tổng tiêu hao − calo nạp, hoặc số **ấn định** trong Nhật ký nếu có; cộng dồn vào mục tiêu (mặc định 77.000 kcal ≈ 10 kg mỡ) |
-
 | Xu hướng cân | Trung bình trượt hàm mũ khoảng 10 ngày, tính theo số ngày thật giữa 2 lần cân |
 | TDEE thực tế | `kcal nạp TB − độ dốc cân (kg/ngày) × 7.700`, trong 28 ngày gần nhất; cần 8 lần cân, 10 ngày ghi đủ món và cách nhau 14 ngày. Chỉ để tham khảo, không ảnh hưởng bộ đếm |
+| 1RM ước tính (Tập tạ) | Epley: `kg × (1 + lần / 30)`; tiến độ vẽ theo 1RM tốt nhất mỗi buổi |
+| Gợi ý tăng tạ | Double progression: mọi set ở mức tạ nặng nhất đạt số lần tối đa của bài → tăng tạ (bước theo bài) và quay về số lần tối thiểu; chưa đạt → giữ tạ, thêm 1 lần |
+| Cảnh báo giảm sức mạnh | 2 buổi gần nhất của một bài đều thấp hơn buổi tốt nhất trong 4 buổi trước đó ≥ 10% |
+| AI ghi món | Claude tách món, trả khoảng kcal + mức giữa; mức giữa được ghi, sửa kcal thì macro co giãn theo cùng tỉ lệ. Dùng số của "Món của tôi" khi khớp tên. Tập tạ chỉ theo dõi sức mạnh, kcal buổi tập vẫn ghi ở Nhật ký |
 
 Phần tập luyện và bước chân đều đã **trừ năng lượng lúc nghỉ** (vì đã nằm trong BMR) để không tính trùng. Bước chân nên nhập **không gồm** phần đi trên máy chạy bộ.
 

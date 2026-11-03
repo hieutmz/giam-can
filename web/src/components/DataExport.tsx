@@ -4,7 +4,7 @@ import { useT } from "../i18n";
 import type { Key } from "../i18n/vi";
 import { exportAll, type ExportData } from "../lib/api";
 import { today } from "../lib/date";
-import { bodyCsv, daysCsv, downloadFile, exercisesCsv, foodsCsv } from "../lib/export";
+import { bodyCsv, daysCsv, downloadFile, exercisesCsv, foodsCsv, strengthCsv } from "../lib/export";
 import Icon from "./Icon";
 
 const CSV = "text/csv;charset=utf-8";
@@ -14,6 +14,7 @@ const FILES: { id: string; label: Key; ext: "csv" | "json"; build: (d: ExportDat
   { id: "mon-an", label: "exp.foods", ext: "csv", build: foodsCsv },
   { id: "bai-tap", label: "exp.exercises", ext: "csv", build: exercisesCsv },
   { id: "co-the", label: "exp.body", ext: "csv", build: bodyCsv },
+  { id: "tap-ta", label: "exp.strength", ext: "csv", build: strengthCsv },
   { id: "toan-bo", label: "exp.all", ext: "json", build: (d) => JSON.stringify({ exported_at: new Date().toISOString(), ...d }, null, 2) },
 ];
 

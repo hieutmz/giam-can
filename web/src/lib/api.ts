@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import type { RecentLog } from "./foods";
-import type { BodyMeasurement, CustomFood, DayLog, ExerciseLog, FoodLog, Profile } from "./types";
+import type { BodyMeasurement, CustomFood, DayLog, ExerciseLog, FoodLog, Profile, StrengthSet } from "./types";
 
 function check<T>(res: { data: T; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
@@ -105,7 +105,7 @@ export async function getRange(from: string, to: string) {
 
 /** Toàn bộ dữ liệu của user đang đăng nhập, để xuất file. */
 export async function exportAll(userId: string) {
-  const [profile, days, foods, exercises, custom_foods, favorites, body] = await Promise.all([
+  const [profile, days, foods, exercises, custom_foods, favorites, body, strength] = await Promise.all([
     getProfile(userId),
     fetchAll<DayLog>((a, b) => supabase.from("day_logs").select("*").order("log_date").range(a, b)),
     fetchAll<FoodLog>((a, b) => supabase.from("food_logs").select("*").order("log_date").order("id").range(a, b)),
@@ -113,8 +113,9 @@ export async function exportAll(userId: string) {
     fetchAll<CustomFood>((a, b) => supabase.from("custom_foods").select("*").order("id").range(a, b)),
     listFavorites(),
     listMeasurements(),
+    listStrengthSets(),
   ]);
-  return { profile, days, foods, exercises, custom_foods, favorites, body };
+  return { profile, days, foods, exercises, custom_foods, favorites, body, strength };
 }
 
 export type ExportData = Awaited<ReturnType<typeof exportAll>>;
@@ -131,6 +132,21 @@ export async function saveMeasurement(id: string | null, m: Omit<BodyMeasurement
 
 export async function deleteMeasurement(id: string) {
   check(await supabase.from("body_measurements").delete().eq("id", id));
+}
+
+/** Mọi set tập tạ, xếp theo ngày rồi thứ tự ghi. */
+export async function listStrengthSets() {
+  return fetchAll<StrengthSet>((a, b) =>
+    supabase.from("strength_sets").select("id,log_date,lift,name,reps,weight_kg,created_at").order("log_date").order("created_at").range(a, b),
+  );
+}
+
+export async function addStrengthSet(s: Omit<StrengthSet, "id" | "created_at">) {
+  return check(await supabase.from("strength_sets").insert(s).select("id,log_date,lift,name,reps,weight_kg,created_at").single()) as StrengthSet;
+}
+
+export async function deleteStrengthSet(id: string) {
+  check(await supabase.from("strength_sets").delete().eq("id", id));
 }
 
 export async function listFavorites() {

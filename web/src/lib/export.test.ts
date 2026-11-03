@@ -27,7 +27,7 @@ describe("daysCsv", () => {
   const profile = { sex: "male", birth_year: 1999, height_cm: 166, weight_kg: 89, bmr_override: 1624, activity_factor: 1.2 } as Profile;
   const day = (log_date: string, deficit_override: number | null) => ({ log_date, deficit_override, steps: null, weight_kg: null }) as DayLog;
   const food = (log_date: string, kcal: number) => ({ log_date, kcal, protein: 0, carb: 0, fat: 0 }) as FoodLog;
-  const data = (d: Partial<ExportData>) => ({ profile, days: [], foods: [], exercises: [], custom_foods: [], favorites: [], body: [], ...d });
+  const data = (d: Partial<ExportData>) => ({ profile, days: [], foods: [], exercises: [], custom_foods: [], favorites: [], body: [], strength: [], ...d });
   const cell = (row: string, i: number) => row.split(",")[i];
 
   it("ngày có món dùng thâm hụt theo công thức", () => {

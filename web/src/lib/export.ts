@@ -81,6 +81,13 @@ export function bodyCsv({ body }: ExportData) {
   );
 }
 
+export function strengthCsv({ strength }: ExportData) {
+  return toCsv(
+    ["date", "lift", "name", "reps", "weight_kg"],
+    strength.map((s) => [s.log_date, s.lift, s.name, s.reps, s.weight_kg]),
+  );
+}
+
 export function downloadFile(filename: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement("a");

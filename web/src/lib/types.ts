@@ -103,3 +103,43 @@ export type Recipe = {
 };
 
 export type CustomFood = Omit<Food, "group"> & { group?: string; recipe?: Recipe | null };
+
+/** Một món AI tách ra từ mô tả bằng lời; kcal và macro tính cho đúng lượng đã ăn. */
+export type FoodEstimate = {
+  name: string;
+  /** Bữa người dùng có nói trong câu; null thì dùng bữa đang chọn */
+  meal: Meal | null;
+  grams: number | null;
+  /** Mức giữa để ghi vào nhật ký */
+  kcal: number;
+  kcal_min: number;
+  kcal_max: number;
+  protein: number;
+  carb: number;
+  fat: number;
+  /** Tên món trong "Món của tôi" đã dùng để tính */
+  matched: string | null;
+  note: string;
+};
+
+export type EstimateRequest = {
+  text: string;
+  myFoods: Pick<CustomFood, "name" | "basis" | "serving_name" | "kcal" | "protein" | "carb" | "fat">[];
+};
+
+export type EstimateResponse = { items: FoodEstimate[]; message: string };
+
+export type EstimateError = "unauthorized" | "forbidden" | "not_configured" | "bad_request" | "refused" | "upstream";
+
+/** Một set tập tạ. Số thứ tự set suy ra từ thứ tự ghi trong ngày. */
+export type StrengthSet = {
+  id: string;
+  log_date: string;
+  /** id trong lib/lifts.ts, hoặc "custom:<tên>" cho bài tự thêm */
+  lift: string;
+  name: string;
+  reps: number;
+  /** null: tập với trọng lượng cơ thể */
+  weight_kg: number | null;
+  created_at: string;
+};
