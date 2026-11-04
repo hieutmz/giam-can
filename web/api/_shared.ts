@@ -51,7 +51,7 @@ export async function guard<T>(request: Request): Promise<{ apiKey: string; body
 /** Một lượt hỏi Claude, bắt trả JSON đúng `schema`. Trả về object đã parse, hoặc Response lỗi. */
 export async function askJson<T>(
   apiKey: string,
-  req: { system: string; user: string; schema: Record<string, unknown>; effort: "low" | "medium" },
+  req: { system: string; user: string | Anthropic.Beta.BetaContentBlockParam[]; schema: Record<string, unknown>; effort: "low" | "medium" },
 ): Promise<{ data: T } | { error: Response }> {
   const client = new Anthropic({ apiKey });
   let response: Anthropic.Beta.BetaMessage;

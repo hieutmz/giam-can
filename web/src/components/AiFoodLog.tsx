@@ -3,12 +3,13 @@ import { usePrefs } from "../i18n";
 import { addFoods } from "../lib/api";
 import { fmt } from "../lib/date";
 import { ApiFailure, estimateFoods, scaleEstimate } from "../lib/ai";
-import { MEALS, type CustomFood, type FoodEstimate, type FoodLog, type Meal } from "../lib/types";
+import { shrinkImage } from "../lib/image";
+import { MEALS, type CustomFood, type EstimateImage, type FoodEstimate, type FoodLog, type Meal } from "../lib/types";
 import Icon from "./Icon";
 
 type Row = { key: number; est: FoodEstimate; on: boolean; name: string; meal: Meal; kcal: string };
 
-/** Ghi món bằng câu mô tả: AI tách món và ước tính, người dùng xem lại rồi mới thêm vào nhật ký. */
+/** Ghi món bằng câu mô tả và/hoặc ảnh chụp: AI tách món và ước tính, người dùng xem lại rồi mới thêm vào nhật ký. */
 export default function AiFoodLog({
   date,
   meal,
@@ -23,6 +24,7 @@ export default function AiFoodLog({
 }) {
   const { t, tx } = usePrefs();
   const [text, setText] = useState("");
+  const [photo, setPhoto] = useState<(EstimateImage & { url: string }) | null>(null);
   const [rows, setRows] = useState<Row[] | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,7 +39,7 @@ export default function AiFoodLog({
     setBusy(true);
     setErr("");
     try {
-      const res = await estimateFoods(text.trim(), myFoods);
+      const res = await estimateFoods(text.trim(), myFoods, photo && { media_type: photo.media_type, data: photo.data });
       setRows(res.items.map((est, i) => ({ key: i, est, on: true, name: est.name, meal: est.meal ?? meal, kcal: String(est.kcal) })));
       setMessage(res.message);
     } catch (e) {
@@ -45,6 +47,16 @@ export default function AiFoodLog({
       setErr(tx(`ai.err.${code}`, t("ai.err.upstream")));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function pickPhoto(file: File | undefined) {
+    if (!file) return;
+    setErr("");
+    try {
+      setPhoto(await shrinkImage(file));
+    } catch {
+      setErr(t("ai.photoErr"));
     }
   }
 
@@ -73,12 +85,38 @@ export default function AiFoodLog({
     return (
       <form className="stack" onSubmit={estimate}>
         <p className="hint">{t("ai.hint")}</p>
+        {photo ? (
+          <div className="ai-photo">
+            <img src={photo.url} alt={t("ai.photoAlt")} />
+            <button type="button" className="icon-btn sm" onClick={() => setPhoto(null)} aria-label={t("ai.photoRemove")}>
+              <Icon name="x" size={16} />
+            </button>
+          </div>
+        ) : (
+          <div className="row2">
+            <label className="btn secondary file-btn">
+              <Icon name="camera" size={16} /> {t("ai.takePhoto")}
+              <input type="file" accept="image/*" capture="environment" onChange={(e) => pickPhoto(e.target.files?.[0])} />
+            </label>
+            <label className="btn secondary file-btn">
+              <Icon name="image" size={16} /> {t("ai.choosePhoto")}
+              <input type="file" accept="image/*" onChange={(e) => pickPhoto(e.target.files?.[0])} />
+            </label>
+          </div>
+        )}
         <label>
-          {t("ai.describe")}
-          <textarea rows={4} autoFocus maxLength={2000} placeholder={t("ai.placeholder")} value={text} onChange={(e) => setText(e.target.value)} />
+          {photo ? t("ai.describePhoto") : t("ai.describe")}
+          <textarea
+            rows={photo ? 2 : 4}
+            autoFocus={!photo}
+            maxLength={2000}
+            placeholder={photo ? t("ai.photoPh") : t("ai.placeholder")}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
         </label>
         {err && <p className="alert err">{err}</p>}
-        <button className="btn primary block" disabled={busy || !text.trim()}>
+        <button className="btn primary block" disabled={busy || (!text.trim() && !photo)}>
           <Icon name="sparkles" size={16} /> {busy ? t("ai.thinking") : t("ai.estimate")}
         </button>
       </form>

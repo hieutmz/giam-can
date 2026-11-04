@@ -76,6 +76,16 @@ export type BodyMeasurement = {
   note: string | null;
 };
 
+/** Xét nghiệm men gan, đơn vị U/L. */
+export type LabResult = {
+  id: string;
+  measured_on: string;
+  alt: number | null;
+  ast: number | null;
+  ggt: number | null;
+  note: string | null;
+};
+
 export type Food = {
   id: string;
   name: string;
@@ -128,12 +138,31 @@ export type FoodEstimate = {
   note: string;
 };
 
+export type EstimateImage = { media_type: "image/jpeg" | "image/png" | "image/webp"; data: string };
+
 export type EstimateRequest = {
   text: string;
+  /** Ảnh món ăn (base64, không có tiền tố data:) */
+  image?: EstimateImage | null;
   myFoods: Pick<CustomFood, "name" | "basis" | "serving_name" | "kcal" | "protein" | "carb" | "fat">[];
 };
 
 export type EstimateResponse = { items: FoodEstimate[]; message: string };
+
+/** Nhờ AI gợi ý món cho phần kcal / macro còn lại trong ngày. */
+export type SuggestRequest = {
+  lang: "vi" | "en" | "zh";
+  meal: Meal;
+  /** Có thể âm khi đã vượt mục tiêu */
+  remaining: { kcal: number; protein: number; carb: number; fat: number };
+  eaten: string[];
+  health_note: string | null;
+  myFoods: EstimateRequest["myFoods"];
+};
+
+export type SuggestItem = { name: string; grams: number | null; kcal: number; protein: number; carb: number; fat: number };
+export type SuggestOption = { title: string; where: string; items: SuggestItem[]; note: string };
+export type SuggestResponse = { options: SuggestOption[] };
 
 export type EstimateError = "unauthorized" | "forbidden" | "not_configured" | "bad_request" | "refused" | "upstream";
 

@@ -1,5 +1,5 @@
 // Vercel Function: POST /api/estimate-food
-// Nhận mô tả bữa ăn bằng lời, nhờ Claude tách món và ước tính kcal + macro.
+// Nhận mô tả bữa ăn bằng lời và/hoặc ảnh chụp món ăn, nhờ Claude tách món và ước tính kcal + macro.
 // Chỉ user đã đăng nhập Supabase mới gọi được (gửi access token ở header Authorization).
 import type { EstimateRequest, EstimateResponse, FoodEstimate, Meal } from "../src/lib/types";
 import { askJson, clean, fail, guard, json, str } from "./_shared.js";
@@ -7,9 +7,13 @@ import { askJson, clean, fail, guard, json, str } from "./_shared.js";
 const MEALS: Meal[] = ["sang", "trua", "xe", "toi", "phu"];
 const MAX_TEXT = 2000;
 const MAX_MY_FOODS = 200;
+/** Ảnh đã được trình duyệt thu nhỏ (cạnh dài ~1.280 px), base64 cỡ vài trăm KB */
+const MAX_IMAGE_BASE64 = 4_000_000;
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
 const SYSTEM = `Bạn là chuyên gia dinh dưỡng 20 năm kinh nghiệm, rành món ăn Việt Nam (cơm bình dân, bún phở, đồ ăn vặt, trà sữa, đồ đóng gói bán ở Việt Nam).
-Người dùng mô tả những gì họ đã ăn uống. Hãy tách thành từng món và ước tính năng lượng, macro cho đúng lượng đã ăn.
+Người dùng mô tả những gì họ đã ăn uống, có thể kèm ảnh chụp. Hãy tách thành từng món và ước tính năng lượng, macro cho đúng lượng đã ăn.
+Có ảnh: nhận diện từng món trong ảnh, ước lượng khẩu phần theo vật đối chiếu (chén, đĩa, đũa, muỗng, ly, bàn tay). Lời mô tả kèm theo (nếu có) được ưu tiên hơn những gì nhìn thấy, vd "ăn một nửa", "không ăn da gà". Ghi giả định khẩu phần vào "note".
 
 Quy tắc:
 - Mỗi món một dòng. Món ghép bán nguyên phần (cơm gà xối mỡ, bún bò, bánh mì thịt) để một dòng; đồ uống, món phụ ăn kèm để dòng riêng.
@@ -68,15 +72,30 @@ export async function POST(request: Request) {
   const g = await guard<EstimateRequest>(request);
   if ("error" in g) return g.error;
   const text = str(g.body.text);
-  if (!text || text.length > MAX_TEXT) return fail("bad_request", 400);
+  const image = g.body.image;
+  const hasImage = Boolean(image);
+  if (image && (!IMAGE_TYPES.includes(image.media_type) || typeof image.data !== "string" || !image.data || image.data.length > MAX_IMAGE_BASE64)) {
+    return fail("bad_request", 400);
+  }
+  if ((!text && !hasImage) || text.length > MAX_TEXT) return fail("bad_request", 400);
+
+  const prompt = `Món của tôi (số liệu người dùng đã lưu):
+${myFoodsBlock(g.body.myFoods)}
+
+${
+    hasImage ? `Ảnh chụp món đã ăn ở trên.${text ? ` Mô tả thêm:
+${text}` : " Không có mô tả thêm."}` : `Mô tả đã ăn uống:
+${text}`
+  }`;
 
   const r = await askJson<{ items: Record<string, unknown>[]; message: string }>(g.apiKey, {
     system: SYSTEM,
-    user: `Món của tôi (số liệu người dùng đã lưu):
-${myFoodsBlock(g.body.myFoods)}
-
-Mô tả đã ăn uống:
-${text}`,
+    user: image
+      ? [
+          { type: "image", source: { type: "base64", media_type: image.media_type, data: image.data } },
+          { type: "text", text: prompt },
+        ]
+      : prompt,
     schema: SCHEMA,
     effort: "low",
   });

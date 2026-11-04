@@ -607,6 +607,11 @@ button:disabled { opacity: 0.45; cursor: default; }
 .ai-kcal { display: flex; align-items: center; gap: 6px; }
 .ai-kcal input { width: 96px; }
 .ai-note { font-style: italic; }
+.file-btn { position: relative; flex-direction: row; justify-content: center; cursor: pointer; overflow: hidden; }
+.file-btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.ai-photo { position: relative; align-self: flex-start; }
+.ai-photo img { display: block; max-width: 100%; max-height: 220px; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+.ai-photo .icon-btn { position: absolute; top: 6px; right: 6px; background: var(--surface); }
 
 /* Tập tạ */
 .lift-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; align-items: start; }
@@ -617,6 +622,17 @@ button:disabled { opacity: 0.45; cursor: default; }
 .set-list li { display: grid; grid-template-columns: 52px 1fr auto 30px; align-items: center; gap: 8px; padding: 6px 0; }
 .set-list li + li { border-top: 1px dashed var(--line); }
 .set-add { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+
+.line-chart .limit { stroke: var(--bad); stroke-width: 1.5; stroke-dasharray: 6 4; }
+
+/* Gợi ý món (AI) */
+.suggest-bar { display: flex; gap: 10px; flex-wrap: wrap; }
+.suggest-bar select { width: auto; flex: 1; min-width: 120px; }
+.suggest-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.suggest-option { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.suggest-option ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; }
+.suggest-option li { display: flex; justify-content: space-between; gap: 8px; }
+.suggest-option li small { flex: none; }
 
 /* Tổng kết ngày (AI) */
 .review-headline { margin: 0; font-size: 15.5px; font-weight: 600; }

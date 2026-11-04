@@ -7,6 +7,7 @@ import ExercisePicker from "../components/ExercisePicker";
 import FoodEditor from "../components/FoodEditor";
 import FoodPicker from "../components/FoodPicker";
 import Icon, { type IconName } from "../components/Icon";
+import MealSuggest from "../components/MealSuggest";
 import Ring from "../components/Ring";
 import { usePrefs } from "../i18n";
 import { exerciseLabel } from "../i18n/labels";
@@ -330,6 +331,18 @@ export default function Diary() {
           </section>
         </div>
       </div>
+
+      {s && !loading && (
+        <MealSuggest
+          key={date}
+          date={date}
+          profile={profile}
+          s={s}
+          foods={foods}
+          meal={defaultMeal()}
+          onAdded={(rows) => setFoods((xs) => [...xs, ...rows])}
+        />
+      )}
 
       {s && bmr && !loading && (
         <DayReviewCard date={date} profile={profile} bmr={bmr} s={s} day={day} foods={foods} exercises={exercises} />

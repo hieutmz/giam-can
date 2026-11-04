@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { MetricChart } from "../components/charts";
 import Icon, { type IconName } from "../components/Icon";
+import LabsSection from "../components/LabsSection";
 import Modal from "../components/Modal";
 import Tile from "../components/Tile";
 import { useT } from "../i18n";
@@ -161,6 +162,8 @@ export default function Body() {
           </section>
         </>
       )}
+
+      {loaded && <LabsSection body={rows} />}
 
       {editing && (
         <MeasurementForm

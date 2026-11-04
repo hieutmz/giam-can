@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { CustomFood, DayReviewInput, DayReviewText, EstimateError, EstimateRequest, EstimateResponse, FoodEstimate } from "./types";
+import type { CustomFood, DayReviewInput, DayReviewText, EstimateError, EstimateImage, EstimateRequest, EstimateResponse, FoodEstimate, SuggestRequest, SuggestResponse } from "./types";
 
 /** Lỗi từ các function trong /api; `code` dùng để chọn câu thông báo theo ngôn ngữ. */
 export class ApiFailure extends Error {
@@ -26,14 +26,22 @@ async function postApi<T>(path: string, body: unknown): Promise<T> {
   return json as T;
 }
 
-/** Gửi mô tả bằng lời cho AI ước tính; kèm "Món của tôi" để AI dùng đúng số liệu đã lưu. */
-export function estimateFoods(text: string, myFoods: CustomFood[]) {
+/** Gửi mô tả bằng lời và/hoặc ảnh món ăn cho AI ước tính; kèm "Món của tôi" để AI dùng đúng số liệu đã lưu. */
+export function estimateFoods(text: string, myFoods: CustomFood[], image?: EstimateImage | null) {
   const body: EstimateRequest = {
     text,
-    myFoods: myFoods.map(({ name, basis, serving_name, kcal, protein, carb, fat }) => ({ name, basis, serving_name, kcal, protein, carb, fat })),
+    image: image ?? null,
+    myFoods: compactFoods(myFoods),
   };
   return postApi<EstimateResponse>("/api/estimate-food", body);
 }
+
+/** Nhờ AI gợi ý món cho phần kcal / protein còn lại. */
+export const suggestMeal = (req: SuggestRequest) => postApi<SuggestResponse>("/api/suggest-meal", req);
+
+/** Gọn "Món của tôi" để gửi kèm cho AI. */
+export const compactFoods = (foods: CustomFood[]): EstimateRequest["myFoods"] =>
+  foods.map(({ name, basis, serving_name, kcal, protein, carb, fat }) => ({ name, basis, serving_name, kcal, protein, carb, fat }));
 
 /** Nhờ AI tổng kết và đánh giá một ngày từ số liệu đã tính sẵn. */
 export const reviewDay = (input: DayReviewInput) => postApi<DayReviewText>("/api/review-day", input);

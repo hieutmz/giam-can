@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import type { RecentLog } from "./foods";
-import type { BodyMeasurement, CustomFood, DayLog, DayReview, ExerciseLog, FoodLog, Profile, StrengthSet } from "./types";
+import type { BodyMeasurement, CustomFood, DayLog, DayReview, ExerciseLog, FoodLog, LabResult, Profile, StrengthSet } from "./types";
 
 function check<T>(res: { data: T; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
@@ -105,7 +105,7 @@ export async function getRange(from: string, to: string) {
 
 /** Toàn bộ dữ liệu của user đang đăng nhập, để xuất file. */
 export async function exportAll(userId: string) {
-  const [profile, days, foods, exercises, custom_foods, favorites, body, strength] = await Promise.all([
+  const [profile, days, foods, exercises, custom_foods, favorites, body, strength, labs] = await Promise.all([
     getProfile(userId),
     fetchAll<DayLog>((a, b) => supabase.from("day_logs").select("*").order("log_date").range(a, b)),
     fetchAll<FoodLog>((a, b) => supabase.from("food_logs").select("*").order("log_date").order("id").range(a, b)),
@@ -114,8 +114,10 @@ export async function exportAll(userId: string) {
     listFavorites(),
     listMeasurements(),
     listStrengthSets(),
+    // Chưa chạy migration 007 thì vẫn xuất được phần còn lại
+    listLabs().catch(() => [] as LabResult[]),
   ]);
-  return { profile, days, foods, exercises, custom_foods, favorites, body, strength };
+  return { profile, days, foods, exercises, custom_foods, favorites, body, strength, labs };
 }
 
 export type ExportData = Awaited<ReturnType<typeof exportAll>>;
@@ -167,6 +169,20 @@ export async function addStrengthSet(s: Omit<StrengthSet, "id" | "created_at">) 
 
 export async function deleteStrengthSet(id: string) {
   check(await supabase.from("strength_sets").delete().eq("id", id));
+}
+
+/** Xếp tăng dần theo ngày xét nghiệm. */
+export async function listLabs() {
+  return check(await supabase.from("lab_results").select("id,measured_on,alt,ast,ggt,note").order("measured_on")) as LabResult[];
+}
+
+export async function saveLab(id: string | null, r: Omit<LabResult, "id">) {
+  if (id) check(await supabase.from("lab_results").update(r).eq("id", id));
+  else check(await supabase.from("lab_results").insert(r));
+}
+
+export async function deleteLab(id: string) {
+  check(await supabase.from("lab_results").delete().eq("id", id));
 }
 
 export async function listFavorites() {

@@ -88,6 +88,13 @@ export function strengthCsv({ strength }: ExportData) {
   );
 }
 
+export function labsCsv({ labs }: ExportData) {
+  return toCsv(
+    ["date", "alt_u_l", "ast_u_l", "ggt_u_l", "note"],
+    labs.map((l) => [l.measured_on, l.alt, l.ast, l.ggt, l.note]),
+  );
+}
+
 export function downloadFile(filename: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement("a");

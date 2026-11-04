@@ -171,13 +171,16 @@ export function Donut({ parts, size = 148, stroke = 18, children }: { parts: { l
 
 export type MetricPoint = { date: string; value: number; trend?: number };
 
-/** Biểu đồ một chỉ số theo thời gian, trục ngang theo đúng khoảng cách ngày; có `trend` thì vẽ thêm đường xu hướng. */
-export function MetricChart({ points, unit, digits = 1, label }: { points: MetricPoint[]; unit: string; digits?: number; label: string }) {
+/**
+ * Biểu đồ một chỉ số theo thời gian, trục ngang theo đúng khoảng cách ngày; có `trend` thì vẽ thêm đường xu hướng.
+ * `limit`: vẽ đường ngang nét đứt làm ngưỡng tham khảo (vd ngưỡng men gan).
+ */
+export function MetricChart({ points, unit, digits = 1, label, limit }: { points: MetricPoint[]; unit: string; digits?: number; label: string; limit?: number }) {
   const { ref, width: W } = useWidth<HTMLDivElement>();
   const H = 200;
   const pad = { l: 40, r: 28, t: 14, b: 26 };
   const hasTrend = points.some((p) => p.trend != null);
-  const all = points.flatMap((p) => (p.trend != null ? [p.value, p.trend] : [p.value]));
+  const all = [...points.flatMap((p) => (p.trend != null ? [p.value, p.trend] : [p.value])), ...(limit != null ? [limit] : [])];
   const min = Math.floor(Math.min(...all) - 0.5);
   const max = Math.ceil(Math.max(...all) + 0.5);
   const span = points.length > 1 ? daysBetween(points[0].date, points[points.length - 1].date) : 0;
@@ -198,6 +201,7 @@ export function MetricChart({ points, unit, digits = 1, label }: { points: Metri
             </text>
           </g>
         ))}
+        {limit != null && <line x1={pad.l} x2={W - pad.r} y1={y(limit)} y2={y(limit)} className="limit" />}
         <path d={path((p) => p.trend ?? p.value)} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {points.map((p, i) => (
           <g key={p.date}>

@@ -136,14 +136,27 @@ create table if not exists public.day_reviews (
   primary key (user_id, log_date)
 );
 
+-- Xét nghiệm men gan, tối đa 1 dòng mỗi ngày
+create table if not exists public.lab_results (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  measured_on date not null,
+  alt numeric(6, 1),                      -- U/L
+  ast numeric(6, 1),                      -- U/L
+  ggt numeric(6, 1),                      -- U/L
+  note text,
+  created_at timestamptz not null default now(),
+  unique (user_id, measured_on)
+);
+
 -- Quyền truy cập qua Data API: chỉ user đã đăng nhập (role authenticated).
 -- Cần khi tắt "Automatically expose new tables" lúc tạo project; bật thì vẫn chạy bình thường.
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on
-  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets, public.day_reviews
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets, public.day_reviews, public.lab_results
   to authenticated;
 revoke all on
-  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets, public.day_reviews
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets, public.day_reviews, public.lab_results
   from anon;
 
 -- Row Level Security
@@ -156,6 +169,7 @@ alter table public.favorite_foods enable row level security;
 alter table public.body_measurements enable row level security;
 alter table public.strength_sets enable row level security;
 alter table public.day_reviews enable row level security;
+alter table public.lab_results enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -191,6 +205,10 @@ create policy "own strength_sets" on public.strength_sets
 
 drop policy if exists "own day_reviews" on public.day_reviews;
 create policy "own day_reviews" on public.day_reviews
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "own lab_results" on public.lab_results;
+create policy "own lab_results" on public.lab_results
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- Tự tạo hồ sơ khi có user mới đăng ký
