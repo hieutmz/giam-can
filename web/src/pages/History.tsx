@@ -7,25 +7,10 @@ import Tile from "../components/Tile";
 import WeekReview from "../components/WeekReview";
 import { usePrefs } from "../i18n";
 import { getRange } from "../lib/api";
-import { dayDeficit, effectiveBmr, summarizeDay, type DaySummary } from "../lib/calc";
-import { addDays, daysBetween, fmt, fmtDate, fmtSigned, parseISODate, today } from "../lib/date";
-import { activityById } from "../lib/exercises";
-import { ADAPTIVE, adaptiveTdee, weightTrend, type AdaptiveTdee, type DayFacts } from "../lib/progress";
-
-type Row = {
-  date: string;
-  s: DaySummary;
-  logged: boolean;
-  hasFood: boolean;
-  fixed: boolean;
-  deficit: number;
-  weight: number | null;
-  cumulative: number;
-  gym: boolean;
-  steps: number | null;
-  water: number | null;
-  sleep: number | null;
-};
+import { effectiveBmr } from "../lib/calc";
+import { counter, dayRows, intakeDays, toFacts, weightPoints } from "../lib/days";
+import { daysBetween, fmt, fmtDate, fmtSigned, today } from "../lib/date";
+import { ADAPTIVE, adaptiveTdee, weightTrend, type AdaptiveTdee } from "../lib/progress";
 
 export default function History() {
   const { profile } = useAuth();
@@ -42,65 +27,9 @@ export default function History() {
       .catch((e) => setError(e.message));
   }, [start, end]);
 
-  const rows: Row[] = useMemo(() => {
-    if (!data || !profile) return [];
-    const bmr = effectiveBmr(profile);
-    if (!bmr) return [];
-    const out: Row[] = [];
-    let cum = 0;
-    for (let d = start; d <= end; d = addDays(d, 1)) {
-      const foods = data.foods.filter((f) => f.log_date === d);
-      const exercises = data.exercises.filter((e) => e.log_date === d);
-      const day = data.days.find((x) => x.log_date === d);
-      const fixed = day?.deficit_override != null;
-      const logged = foods.length > 0 || fixed;
-      if (!logged && !day && !exercises.length) continue;
-      const s = summarizeDay({
-        bmr,
-        activityFactor: Number(profile.activity_factor),
-        weightKg: Number(day?.weight_kg ?? profile.weight_kg ?? 70),
-        heightCm: Number(profile.height_cm ?? 165),
-        foods,
-        exercises,
-        steps: day?.steps ?? null,
-      });
-      // Chỉ cộng vào bộ đếm những ngày đã nhập món ăn hoặc đã tự chốt số thâm hụt
-      const deficit = dayDeficit(s, day?.deficit_override);
-      if (logged) cum += deficit;
-      out.push({
-        date: d,
-        s,
-        logged,
-        hasFood: foods.length > 0,
-        fixed,
-        deficit,
-        weight: day?.weight_kg ?? null,
-        cumulative: cum,
-        gym: exercises.some((e) => activityById(e.activity)?.group === "gym"),
-        steps: day?.steps ?? null,
-        water: day?.water_ml ?? null,
-        sleep: day?.sleep_hours == null ? null : Number(day.sleep_hours),
-      });
-    }
-    return out;
-  }, [data, profile, start, end]);
-
-  const trend = useMemo(() => weightTrend(rows.flatMap((r) => (r.weight == null ? [] : [{ date: r.date, kg: Number(r.weight) }]))), [rows]);
-  const facts: DayFacts[] = useMemo(
-    () =>
-      rows.map((r) => ({
-        date: r.date,
-        hasFood: r.hasFood,
-        intake: r.s.intake,
-        protein: r.s.protein,
-        deficit: r.logged ? r.deficit : null,
-        gym: r.gym,
-        steps: r.steps,
-        water: r.water,
-        sleep: r.sleep,
-      })),
-    [rows],
-  );
+  const rows = useMemo(() => (data && profile ? dayRows(data, profile, start, end) : []), [data, profile, start, end]);
+  const trend = useMemo(() => weightTrend(weightPoints(rows)), [rows]);
+  const facts = useMemo(() => toFacts(rows), [rows]);
   const targets = useMemo(
     () => ({
       protein: profile?.protein_target ?? 0,
@@ -117,22 +46,11 @@ export default function History() {
 
   const goal = profile.deficit_goal;
   const logged = rows.filter((r) => r.logged);
-  const total = logged.at(-1)?.cumulative ?? 0;
-  const avg = logged.length ? total / logged.length : 0;
-  const pct = Math.max(0, (total / goal) * 100);
-  let eta = "—";
-  if (avg > 0) {
-    const d = parseISODate(end);
-    d.setDate(d.getDate() + Math.ceil((goal - total) / avg));
-    eta = fmtDate(d, "full");
-  }
+  const { total, avg, pct, eta: etaDate } = counter(rows, goal, end);
+  const eta = etaDate ? fmtDate(etaDate, "full") : "—";
   const chartRows = logged.slice(-30);
   const maxAbs = Math.max(1, ...chartRows.map((r) => Math.abs(r.deficit)));
-  const adaptive = adaptiveTdee(
-    trend,
-    rows.filter((r) => r.hasFood).map((r) => ({ date: r.date, intake: r.s.intake, formulaTdee: r.s.tdee })),
-    effectiveBmr(profile) ?? 0,
-  );
+  const adaptive = adaptiveTdee(trend, intakeDays(rows), effectiveBmr(profile) ?? 0);
 
   return (
     <div className="page">
@@ -160,7 +78,12 @@ export default function History() {
       <section className="card">
         <div className="card-head">
           <h2>{t("st.progress")}</h2>
-          <span className="pct-badge">{fmt(pct, 2)}%</span>
+          <div className="toolbar">
+            <Link to="/ke-hoach" className="link small">
+              {t("pl.link")}
+            </Link>
+            <span className="pct-badge">{fmt(pct, 2)}%</span>
+          </div>
         </div>
         <div className="bar lg">
           <div style={{ width: `${Math.min(100, pct)}%` }} />

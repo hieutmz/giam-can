@@ -1,11 +1,9 @@
 // Vercel Function: POST /api/estimate-food
 // Nhận mô tả bữa ăn bằng lời, nhờ Claude tách món và ước tính kcal + macro.
 // Chỉ user đã đăng nhập Supabase mới gọi được (gửi access token ở header Authorization).
-import Anthropic from "@anthropic-ai/sdk";
-import { createClient } from "@supabase/supabase-js";
-import type { EstimateError, EstimateRequest, EstimateResponse, FoodEstimate, Meal } from "../src/lib/types";
+import type { EstimateRequest, EstimateResponse, FoodEstimate, Meal } from "../src/lib/types";
+import { askJson, clean, fail, guard, json, str } from "./_shared.js";
 
-const MODEL = "claude-opus-5-5";
 const MEALS: Meal[] = ["sang", "trua", "xe", "toi", "phu"];
 const MAX_TEXT = 2000;
 const MAX_MY_FOODS = 200;
@@ -58,27 +56,6 @@ const SCHEMA = {
   additionalProperties: false,
 };
 
-const json = (body: unknown, status = 200) => Response.json(body, { status });
-const fail = (error: EstimateError, status: number) => json({ error }, status);
-
-const env = (name: string) => process.env[name]?.trim() || undefined;
-
-async function currentUser(request: Request) {
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  const url = env("SUPABASE_URL") ?? env("VITE_SUPABASE_URL");
-  const key = env("SUPABASE_ANON_KEY") ?? env("VITE_SUPABASE_ANON_KEY");
-  if (!token || !url || !key) return null;
-  const { data, error } = await createClient(url, key, { auth: { persistSession: false } }).auth.getUser(token);
-  return error ? null : data.user;
-}
-
-const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-
-const clean = (n: unknown, max: number) => {
-  const v = Number(n);
-  return Number.isFinite(v) ? Math.min(max, Math.max(0, Math.round(v * 10) / 10)) : 0;
-};
-
 function myFoodsBlock(foods: EstimateRequest["myFoods"]) {
   const lines = (Array.isArray(foods) ? foods : []).slice(0, MAX_MY_FOODS).map((f) => {
     const unit = f.basis === "serving" ? `1 ${String(f.serving_name || "phần").slice(0, 20)}` : "100 g";
@@ -88,64 +65,24 @@ function myFoodsBlock(foods: EstimateRequest["myFoods"]) {
 }
 
 export async function POST(request: Request) {
-  const apiKey = env("ANTHROPIC_API_KEY");
-  if (!apiKey) return fail("not_configured", 503);
-
-  const user = await currentUser(request);
-  if (!user) return fail("unauthorized", 401);
-  // Giới hạn người được dùng AI (tốn phí API): danh sách email cách nhau bằng dấu phẩy
-  const allowed = env("AI_ALLOWED_EMAILS")?.toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
-  if (allowed?.length && !allowed.includes(user.email?.toLowerCase() ?? "")) return fail("forbidden", 403);
-
-  let body: EstimateRequest;
-  try {
-    body = (await request.json()) as EstimateRequest;
-  } catch {
-    return fail("bad_request", 400);
-  }
-  const text = str(body.text);
+  const g = await guard<EstimateRequest>(request);
+  if ("error" in g) return g.error;
+  const text = str(g.body.text);
   if (!text || text.length > MAX_TEXT) return fail("bad_request", 400);
 
-  const client = new Anthropic({ apiKey });
-  let response: Anthropic.Beta.BetaMessage;
-  try {
-    response = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 8000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
-      system: SYSTEM,
-      messages: [
-        {
-          role: "user",
-          content: `Món của tôi (số liệu người dùng đã lưu):\n${myFoodsBlock(body.myFoods)}\n\nMô tả đã ăn uống:\n${text}`,
-        },
-      ],
-    });
-  } catch (e) {
-    if (e instanceof Anthropic.APIError) {
-      console.error(`Anthropic API error ${e.status}: ${e.message}`);
-      return fail("upstream", 502);
-    }
-    throw e;
-  }
+  const r = await askJson<{ items: Record<string, unknown>[]; message: string }>(g.apiKey, {
+    system: SYSTEM,
+    user: `Món của tôi (số liệu người dùng đã lưu):
+${myFoodsBlock(g.body.myFoods)}
 
-  if (response.stop_reason === "refusal") return fail("refused", 422);
-  const textBlock = response.content.find((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text");
-  if (response.stop_reason !== "end_turn" || !textBlock) {
-    console.error(`Unexpected stop_reason ${response.stop_reason}`);
-    return fail("upstream", 502);
-  }
+Mô tả đã ăn uống:
+${text}`,
+    schema: SCHEMA,
+    effort: "low",
+  });
+  if ("error" in r) return r.error;
 
-  let parsed: { items: Record<string, unknown>[]; message: string };
-  try {
-    parsed = JSON.parse(textBlock.text);
-  } catch {
-    return fail("upstream", 502);
-  }
-
-  const items: FoodEstimate[] = (parsed.items ?? []).map((it) => {
+  const items: FoodEstimate[] = (r.data.items ?? []).map((it) => {
     const kcal = clean(it.kcal, 5000);
     return {
       name: str(it.name).slice(0, 120) || "?",
@@ -161,5 +98,5 @@ export async function POST(request: Request) {
       note: str(it.note),
     };
   });
-  return json({ items, message: str(parsed.message) } satisfies EstimateResponse);
+  return json({ items, message: str(r.data.message) } satisfies EstimateResponse);
 }

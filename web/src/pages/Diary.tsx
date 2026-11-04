@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import CopyMeals from "../components/CopyMeals";
+import DayReviewCard from "../components/DayReviewCard";
 import ExercisePicker from "../components/ExercisePicker";
 import FoodEditor from "../components/FoodEditor";
 import FoodPicker from "../components/FoodPicker";
@@ -329,6 +330,10 @@ export default function Diary() {
           </section>
         </div>
       </div>
+
+      {s && bmr && !loading && (
+        <DayReviewCard date={date} profile={profile} bmr={bmr} s={s} day={day} foods={foods} exercises={exercises} />
+      )}
 
       {foodModal && <FoodPicker date={date} meal={foodModal} onClose={() => setFoodModal(null)} onAdded={(f) => setFoods((xs) => [...xs, f])} />}
       {exModal && (

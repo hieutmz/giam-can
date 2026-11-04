@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { usePrefs } from "../i18n";
 import { addFoods } from "../lib/api";
 import { fmt } from "../lib/date";
-import { EstimateFailure, estimateFoods, scaleEstimate } from "../lib/estimate";
+import { ApiFailure, estimateFoods, scaleEstimate } from "../lib/ai";
 import { MEALS, type CustomFood, type FoodEstimate, type FoodLog, type Meal } from "../lib/types";
 import Icon from "./Icon";
 
@@ -41,7 +41,7 @@ export default function AiFoodLog({
       setRows(res.items.map((est, i) => ({ key: i, est, on: true, name: est.name, meal: est.meal ?? meal, kcal: String(est.kcal) })));
       setMessage(res.message);
     } catch (e) {
-      const code = e instanceof EstimateFailure ? e.code : "upstream";
+      const code = e instanceof ApiFailure ? e.code : "upstream";
       setErr(tx(`ai.err.${code}`, t("ai.err.upstream")));
     } finally {
       setBusy(false);

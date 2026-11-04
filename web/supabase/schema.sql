@@ -20,6 +20,10 @@ create table if not exists public.profiles (
   steps_target int not null default 6000,
   deficit_goal int not null default 77000,
   start_date date not null default current_date,
+  plan_start date,                        -- kỳ kế hoạch hiện tại (trang Kế hoạch); null = start_date
+  plan_end date,
+  fat_loss_target_kg numeric(4, 1),       -- mục tiêu giảm mỡ trong kỳ kế hoạch
+  health_note text,                       -- ghi chú sức khỏe gửi kèm khi AI tổng kết ngày
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -123,14 +127,23 @@ create table if not exists public.strength_sets (
 );
 create index if not exists strength_sets_user_lift on public.strength_sets (user_id, lift, log_date);
 
+-- Bản tổng kết ngày do AI viết, tối đa 1 bản mỗi ngày
+create table if not exists public.day_reviews (
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  log_date date not null,
+  review jsonb not null,                  -- nội dung AI trả về + số liệu lúc đánh giá
+  created_at timestamptz not null default now(),
+  primary key (user_id, log_date)
+);
+
 -- Quyền truy cập qua Data API: chỉ user đã đăng nhập (role authenticated).
 -- Cần khi tắt "Automatically expose new tables" lúc tạo project; bật thì vẫn chạy bình thường.
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on
-  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets, public.day_reviews
   to authenticated;
 revoke all on
-  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets
+  public.profiles, public.day_logs, public.food_logs, public.exercise_logs, public.custom_foods, public.favorite_foods, public.body_measurements, public.strength_sets, public.day_reviews
   from anon;
 
 -- Row Level Security
@@ -142,6 +155,7 @@ alter table public.custom_foods enable row level security;
 alter table public.favorite_foods enable row level security;
 alter table public.body_measurements enable row level security;
 alter table public.strength_sets enable row level security;
+alter table public.day_reviews enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -173,6 +187,10 @@ create policy "own body_measurements" on public.body_measurements
 
 drop policy if exists "own strength_sets" on public.strength_sets;
 create policy "own strength_sets" on public.strength_sets
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "own day_reviews" on public.day_reviews;
+create policy "own day_reviews" on public.day_reviews
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- Tự tạo hồ sơ khi có user mới đăng ký

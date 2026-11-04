@@ -5,7 +5,8 @@ Nhật ký ăn uống và luyện tập, tự tính calo nạp / tiêu hao / th�
 - **Frontend:** React 18 + Vite + TypeScript, build ra web tĩnh
 - **Backend:** Supabase (đăng nhập email, Postgres, Row Level Security → mỗi user chỉ thấy dữ liệu của mình)
 - **Hosting:** Vercel (đang dùng) hoặc Cloudflare Pages, tự deploy khi `git push`
-- **AI:** Vercel Function `api/estimate-food.ts` gọi Claude (`claude-opus-5-5`) để ước tính kcal từ câu mô tả bữa ăn
+- **AI:** Vercel Function trong `api/` gọi Claude (`claude-opus-5-5`): `estimate-food` ước tính kcal từ câu mô tả bữa ăn, `review-day` viết phần "Tổng kết & đánh giá" cuối ngày. Phần dùng chung (đăng nhập, gọi Claude) ở `api/_shared.ts`
+- **PWA:** cài được lên màn hình chính (`public/manifest.webmanifest`, `public/sw.js`); service worker chỉ cache giao diện, không cache dữ liệu
 
 ## 1. Tạo Supabase project (1 lần)
 
@@ -81,6 +82,9 @@ Từ đó mỗi lần `git push` lên `master`, Cloudflare tự build và deploy
 | 1RM ước tính (Tập tạ) | Epley: `kg × (1 + lần / 30)`; tiến độ vẽ theo 1RM tốt nhất mỗi buổi |
 | Gợi ý tăng tạ | Double progression: mọi set ở mức tạ nặng nhất đạt số lần tối đa của bài → tăng tạ (bước theo bài) và quay về số lần tối thiểu; chưa đạt → giữ tạ, thêm 1 lần |
 | Cảnh báo giảm sức mạnh | 2 buổi gần nhất của một bài đều thấp hơn buổi tốt nhất trong 4 buổi trước đó ≥ 10% |
+| Dự báo kế hoạch | Mỡ giảm = thâm hụt cộng dồn trong kỳ / 7.700. Dự kiến = (đã đạt + thâm hụt TB × số ngày còn lại) / 7.700. Cần mỗi ngày = (mục tiêu × 7.700 − đã đạt) / số ngày còn lại; trên 1.000 kcal thì khuyên lùi mốc |
+| Gợi ý kcal giai đoạn sau | TDEE thực tế (nếu đủ dữ liệu, không thì TDEE công thức TB 14 ngày ghi gần nhất) − 500, làm tròn 50, không dưới BMR |
+| AI tổng kết ngày | App tự tính mọi con số (thâm hụt, bộ đếm, ngày về đích) rồi gửi cho Claude; AI chỉ nhận xét 6 mục và gợi ý cho ngày mai. Bản đánh giá lưu ở bảng `day_reviews` |
 | AI ghi món | Claude tách món, trả khoảng kcal + mức giữa; mức giữa được ghi, sửa kcal thì macro co giãn theo cùng tỉ lệ. Dùng số của "Món của tôi" khi khớp tên. Tập tạ chỉ theo dõi sức mạnh, kcal buổi tập vẫn ghi ở Nhật ký |
 
 Phần tập luyện và bước chân đều đã **trừ năng lượng lúc nghỉ** (vì đã nằm trong BMR) để không tính trùng. Bước chân nên nhập **không gồm** phần đi trên máy chạy bộ.

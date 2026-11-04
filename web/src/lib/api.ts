@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import type { RecentLog } from "./foods";
-import type { BodyMeasurement, CustomFood, DayLog, ExerciseLog, FoodLog, Profile, StrengthSet } from "./types";
+import type { BodyMeasurement, CustomFood, DayLog, DayReview, ExerciseLog, FoodLog, Profile, StrengthSet } from "./types";
 
 function check<T>(res: { data: T; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
@@ -139,6 +139,26 @@ export async function listStrengthSets() {
   return fetchAll<StrengthSet>((a, b) =>
     supabase.from("strength_sets").select("id,log_date,lift,name,reps,weight_kg,created_at").order("log_date").order("created_at").range(a, b),
   );
+}
+
+export async function listStrengthSetsOn(date: string) {
+  return check(
+    await supabase.from("strength_sets").select("id,log_date,lift,name,reps,weight_kg,created_at").eq("log_date", date).order("created_at"),
+  ) as StrengthSet[];
+}
+
+export async function getDayReview(date: string) {
+  return check(await supabase.from("day_reviews").select("log_date,review,created_at").eq("log_date", date).maybeSingle()) as DayReview | null;
+}
+
+export async function saveDayReview(date: string, review: DayReview["review"]) {
+  return check(
+    await supabase
+      .from("day_reviews")
+      .upsert({ log_date: date, review, created_at: new Date().toISOString() }, { onConflict: "user_id,log_date" })
+      .select("log_date,review,created_at")
+      .single(),
+  ) as DayReview;
 }
 
 export async function addStrengthSet(s: Omit<StrengthSet, "id" | "created_at">) {

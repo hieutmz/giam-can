@@ -20,6 +20,12 @@ export type Profile = {
   steps_target: number;
   deficit_goal: number;
   start_date: string;
+  /** Kỳ kế hoạch hiện tại; null thì bắt đầu từ start_date */
+  plan_start: string | null;
+  plan_end: string | null;
+  fat_loss_target_kg: number | null;
+  /** Ghi chú sức khỏe gửi kèm khi AI tổng kết ngày, vd "men gan cao" */
+  health_note: string | null;
 };
 
 export type DayLog = {
@@ -143,3 +149,63 @@ export type StrengthSet = {
   weight_kg: number | null;
   created_at: string;
 };
+
+export type ReviewStatus = "good" | "warn" | "bad";
+export type ReviewArea = "kcal" | "protein" | "water" | "sleep" | "activity" | "food";
+export const REVIEW_AREAS: ReviewArea[] = ["kcal", "protein", "water", "sleep", "activity", "food"];
+
+/** Phần AI viết trong bản tổng kết ngày. */
+export type DayReviewText = {
+  headline: string;
+  items: { area: ReviewArea; status: ReviewStatus; text: string }[];
+  tomorrow: string[];
+};
+
+/** Số liệu tính sẵn ở trình duyệt gửi cho AI; AI chỉ nhận xét, không tự tính lại. */
+export type DayReviewInput = {
+  date: string;
+  lang: "vi" | "en" | "zh";
+  profile: {
+    sex: "male" | "female";
+    age: number | null;
+    height_cm: number | null;
+    bmr: number;
+    kcal_target: number;
+    protein_target: number;
+    carb_target: number;
+    fat_target: number;
+    water_target_ml: number;
+    sleep_target: number;
+    steps_target: number;
+    health_note: string | null;
+  };
+  day: {
+    intake: number;
+    protein: number;
+    carb: number;
+    fat: number;
+    baseline: number;
+    steps: number | null;
+    steps_kcal: number;
+    exercise_kcal: number;
+    tdee: number;
+    deficit: number;
+    deficit_fixed: boolean;
+    /** Ngày có được cộng vào bộ đếm không (đã ghi món hoặc tự chốt thâm hụt) */
+    counted: boolean;
+    water_ml: number | null;
+    sleep_hours: number | null;
+    weight_kg: number | null;
+    note: string | null;
+  };
+  foods: { meal: Meal; name: string; kcal: number; protein: number }[];
+  exercises: { name: string; minutes: number; kcal: number }[];
+  strength: { name: string; sets: string }[];
+  counter: { goal: number; total: number; pct: number; remaining: number; avg: number; eta: string | null; logged_days: number };
+  /** 7 ngày gần nhất trước ngày này */
+  recent: { date: string; intake: number | null; deficit: number | null }[];
+};
+
+export type DayReviewSnapshot = { intake: number; tdee: number; deficit: number; counted: boolean; counter: DayReviewInput["counter"] };
+
+export type DayReview = { log_date: string; review: DayReviewText & { snapshot: DayReviewSnapshot }; created_at: string };

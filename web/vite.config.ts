@@ -9,7 +9,8 @@ function apiRoutes(): Plugin {
     configureServer(server) {
       server.middlewares.use("/api", async (req, res, next) => {
         const name = req.url?.split("?")[0].replace(/^\//, "") ?? "";
-        if (!/^[\w-]+$/.test(name)) return next();
+        // Như Vercel: file bắt đầu bằng "_" là module dùng chung, không phải route
+        if (!/^[\w-]+$/.test(name) || name.startsWith("_")) return next();
         try {
           const mod = await server.ssrLoadModule(`/api/${name}.ts`);
           const handler = mod[req.method ?? "GET"] as ((r: Request) => Promise<Response>) | undefined;

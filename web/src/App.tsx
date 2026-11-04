@@ -12,6 +12,7 @@ import History from "./pages/History";
 import Login from "./pages/Login";
 import MyFoods from "./pages/MyFoods";
 import Overview from "./pages/Overview";
+import Plan from "./pages/Plan";
 import ProfilePage from "./pages/Profile";
 import Strength from "./pages/Strength";
 
@@ -23,6 +24,7 @@ const NAV: NavItem[] = [
   { to: "/tap-luyen", label: "nav.strength", icon: "dumbbell" },
   { to: "/thong-ke", label: "nav.stats", icon: "stats" },
   { to: "/co-the", label: "nav.body", icon: "scale", hideMobile: true },
+  { to: "/ke-hoach", label: "nav.plan", icon: "target", hideMobile: true },
   { to: "/mon-cua-toi", label: "nav.myFoods", icon: "star", hideMobile: true },
   { to: "/thuc-pham", label: "nav.foods", icon: "apple", hideMobile: true },
   { to: "/ho-so", label: "nav.profile", icon: "user" },
@@ -77,6 +79,7 @@ export default function App() {
           <Route path="/tap-luyen" element={<Strength />} />
           <Route path="/thong-ke" element={<History />} />
           <Route path="/co-the" element={<Body />} />
+          <Route path="/ke-hoach" element={<Plan />} />
           <Route path="/mon-cua-toi" element={<MyFoods />} />
           <Route path="/thuc-pham" element={<Foods />} />
           <Route path="/ho-so" element={<ProfilePage />} />

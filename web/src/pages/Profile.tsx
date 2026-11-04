@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import DataExport from "../components/DataExport";
 import Icon from "../components/Icon";
+import InstallApp from "../components/InstallApp";
 import { PrefsControls } from "../components/PrefsMenu";
 import { useT } from "../i18n";
 import { saveProfile } from "../lib/api";
@@ -176,6 +177,11 @@ export default function ProfilePage() {
               <input type="date" value={p.start_date} onChange={(e) => set("start_date", e.target.value)} required />
             </label>
           </div>
+          <label>
+            {t("pf.healthNote")}
+            <textarea rows={2} value={p.health_note ?? ""} placeholder={t("pf.healthNotePh")} onChange={(e) => set("health_note", e.target.value || null)} />
+            <small className="muted">{t("pf.healthNoteHint")}</small>
+          </label>
           {msg && <p className={`alert ${msg.ok ? "ok" : "err"}`}>{msg.text}</p>}
           <button className="btn primary block" disabled={busy}>
             {t("pf.save")}
@@ -189,6 +195,7 @@ export default function ProfilePage() {
             </h2>
             <PrefsControls />
           </section>
+          <InstallApp />
           <DataExport />
           <ChangePassword />
           <button className="btn secondary block" onClick={signOut}>

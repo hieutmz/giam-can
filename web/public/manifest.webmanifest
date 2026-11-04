@@ -1,0 +1,21 @@
+{
+  "name": "Giảm Cân",
+  "short_name": "Giảm Cân",
+  "description": "Nhật ký ăn uống, luyện tập và theo dõi thâm hụt calo.",
+  "lang": "vi",
+  "start_url": "/nhat-ky",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#005e60",
+  "theme_color": "#005e60",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Nhật ký", "url": "/nhat-ky", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Tập tạ", "url": "/tap-luyen", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
